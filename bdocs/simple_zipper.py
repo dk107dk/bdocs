@@ -1,17 +1,56 @@
 from  uuid import uuid4
 import shutil
+import os
 import logging
 from cdocs.contextual_docs import FilePath
 from bdocs.zipper import Zipper
+from bdocs.simple_rotater import SimpleRotater
+from bdocs.bdocs_config import BdocsConfig
+from zipfile import ZipFile
 
 class SimpleZipper(Zipper):
+
+    def __init__(self, config:BdocsConfig):
+        self._config = config
 
     def zip(self, filepath:FilePath) -> FilePath:
         auuid =  uuid4()
         auuid = str(auuid).replace('-', '_') + ".zip"
-        #print(f"zip.the uuid.zip is {auuid}")
         result = shutil.make_archive(auuid, 'zip', filepath)
-        #print(f"zip.the result is {result}")
         return result
+
+    def unzip_doc_tree(self, zipfile:FilePath) -> None:
+        if not os.path.exists(zipfile):
+            raise Exception(f"no file at {zipfile}")
+        zipfilename = zipfile[zipfile.rindex(os.sep)+1:]
+        tmpdir = self._config.get("locations", "temp_dir")
+        unzipdirname = self._tempname()
+        tempzipdir = tmpdir + os.sep + unzipdirname
+        os.mkdir(tempzipdir)
+        unzipme =  tempzipdir + os.sep + zipfilename
+        os.rename( zipfile, unzipme )
+        with ZipFile(unzipme, 'r') as z:
+            z.extractall(tempzipdir )
+        # there should be a single directory -- the root -- and the zipfile
+        files = os.listdir(tempzipdir)
+        if len(files) != 2:
+            raise Exception(f"there should be just 2 files at {tempzipdir}, but there are: {files}")
+        newrootname = [_ for _ in files if _ != zipfilename ][0]
+        self.add_root_dir( newrootname, tempzipdir + os.sep + newrootname)
+        shutil.rmtree(tempzipdir)
+
+    def add_root_dir(self, newrootname:str, whereitisnow:FilePath) -> None:
+        docsdir = self._config.get("locations", "docs_dir")
+        whereitsgoing = docsdir + os.sep + newrootname
+        if os.path.exists(whereitsgoing):
+            self.move_root(whereitsgoing)
+        os.rename( whereitisnow, whereitsgoing )
+        self._config.add_to_config("docs", newrootname, whereitsgoing)
+
+    def move_root(self, path:FilePath) -> FilePath:
+        return SimpleRotater().rotate(path)
+
+    def _tempname(self) -> str:
+        return str(uuid4()).replace('-', '_')
 
 

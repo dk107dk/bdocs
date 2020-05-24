@@ -1,3 +1,6 @@
+import os
+from  uuid import uuid4
+import shutil
 from typing import Optional, Union
 from cdocs.contextual_docs import Doc, FilePath, DocPath, JsonDict
 from bdocs.building_docs import BuildingDocs
@@ -16,14 +19,6 @@ from bdocs.simple_writer import SimpleWriter
 from bdocs.simple_walker import SimpleWalker
 from bdocs.bdocs_config import BdocsConfig
 from bdocs.simple_deleter import SimpleDeleter
-import os
-from zipfile import ZipFile
-from  uuid import uuid4
-import shutil
-
-def _tempname() -> str:
-    return str(uuid4()).replace('-', '_')
-
 
 
 class Bdocs(BuildingDocs):
@@ -35,7 +30,7 @@ class Bdocs(BuildingDocs):
         self._writer = SimpleWriter()
         self._walker = SimpleWalker()
         self._deleter = SimpleDeleter()
-        self._zipper = SimpleZipper()
+        self._zipper = SimpleZipper(cfg)
         self._rotater = SimpleRotater()
         self._pather = SimplePather(self._docs_root, cfg.get_config_path()) if cfg.pather is None else cfg.pather
 
@@ -66,7 +61,6 @@ class Bdocs(BuildingDocs):
     @property
     def config(self) -> Config:
         return self._config
-
 
 # ------------------
 
@@ -105,43 +99,12 @@ class Bdocs(BuildingDocs):
     def zip_doc_tree(self) -> FilePath:
         return self.zipper.zip(self.get_dir_for_docpath("/"))
 
-    # this doesn't belong here because this Bdocs has its own root and shouldn't be
-    # messing around with unzipping another root
+    # this doesn't really belong here because this Bdocs has
+    # its own root and shouldn't be messing around with unzipping
+    # another root
     def unzip_doc_tree(self, zipfile:FilePath) -> None:
         if not os.path.exists(zipfile):
             raise Exception(f"no file at {zipfile}")
-        zipfilename = zipfile[zipfile.rindex(os.sep)+1:]
-        tmpdir = self.config.get("locations", "temp_dir")
-        unzipdirname = _tempname()
-        tempzipdir = tmpdir + os.sep + unzipdirname
-        os.mkdir(tempzipdir)
-        unzipme =  tempzipdir + os.sep + zipfilename
-        os.rename( zipfile, unzipme )
-        with ZipFile(unzipme, 'r') as z:
-            z.extractall(tempzipdir )
-        # there should be a single directory -- the root -- and the zipfile
-        files = os.listdir(tempzipdir)
-        if len(files) != 2:
-            raise Exception(f"there should be just 2 files at {tempzipdir}, but there are: {files}")
-        newrootname = [_ for _ in files if _ != zipfilename ][0]
-        self.add_root_dir( newrootname, tempzipdir + os.sep + newrootname)
-        shutil.rmtree(tempzipdir)
-
-    def add_root_dir(self, newrootname:str, whereitisnow:FilePath) -> None:
-        docsdir = self.config.get("locations", "docs_dir")
-        whereitsgoing = docsdir + os.sep + newrootname
-        if os.path.exists(whereitsgoing):
-            self.move_root(whereitsgoing)
-        os.rename( whereitisnow, whereitsgoing )
-        self.config.add_to_config("docs", newrootname, whereitsgoing)
-
-    def move_root(self, path:FilePath) -> FilePath:
-        return self.rotater.rotate(path)
-
-
-
-
-
-
+        self.zipper.unzip_doc_tree(zipfile)
 
 
