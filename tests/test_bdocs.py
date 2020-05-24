@@ -4,17 +4,20 @@ from cdocs.cdocs import BadDocPath
 from cdocs.contextual_docs import DocPath, FilePath
 import unittest
 import os
+import shutil
 
-PATH:FilePath = "/Users/davidkershaw/dev/bdocs/docs/example"
+BASE:FilePath = "/Users/davidkershaw/dev/bdocs"
+PATH:FilePath = BASE + "/docs/example"
+TMP:FilePath = BASE + "/tmp"
 HOME:DocPath = "/app/home"
 
 class BdocsTests(unittest.TestCase):
 
     def test_get_doc_root_path(self):
-        print(f"BdocsTests.test_get_doc_root_path")
+        #print(f"BdocsTests.test_get_doc_root_path")
         bdocs = Bdocs(PATH)
         path = bdocs.get_docs_root()
-        print(f"test_get_doc_root_path: docs root is {path}")
+        #print(f"test_get_doc_root_path: docs root is {path}")
         self.assertTrue( os.path.exists(path), msg="docs root must exsit" )
         self.assertEqual(path, PATH)
 
@@ -56,4 +59,14 @@ class BdocsTests(unittest.TestCase):
         self.assertEqual(b, True, msg=f'{azip} must exist')
         if b:
             os.remove(azip)
+
+    def test_unzip_doc_tree(self):
+        bdocs = Bdocs(PATH)
+        shutil.copyfile(BASE+"/tests/resources/test.zip", BASE+"/tests/resources/____.zip" )
+        bdocs.unzip_doc_tree( BASE+"/tests/resources/____.zip" )
+        b = os.path.exists( BASE + "/docs/test")
+        self.assertEqual(b, True, msg=f'{BASE + "/docs/test"} must exist')
+        if b:
+            shutil.rmtree(BASE + "/docs/test")
+            bdocs.config.remove_from_config("docs", "test")
 
