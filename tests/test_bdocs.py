@@ -1,4 +1,5 @@
 from bdocs.bdocs import Bdocs
+from bdocs.printer import Printer
 from cdocs.cdocs import Cdocs
 from cdocs.cdocs import BadDocPath
 from cdocs.contextual_docs import DocPath, FilePath
@@ -48,9 +49,9 @@ class BdocsTests(unittest.TestCase):
     def test_get_doc_tree(self):
         bdocs = Bdocs(PATH + '/app/home/teams/todos')
         tree = bdocs.get_doc_tree()
-        # should return: {'assignee': 'assignee.xml', 'tokens': 'tokens.json'}
+        #Printer().print_tree(tree)
         self.assertIn( 'assignee', tree, msg=f'tree must include "assignee"' )
-        self.assertEqual( len(tree), 2, msg=f'tree must have two keys')
+        self.assertEqual( len(tree), 3, msg=f'tree must have three keys: {tree}')
 
     def test_zip_doc_tree(self):
         bdocs = Bdocs(PATH)
@@ -69,4 +70,29 @@ class BdocsTests(unittest.TestCase):
         if b:
             shutil.rmtree(BASE + "/docs/test")
             bdocs.config.remove_from_config("docs", "test")
+
+    def test_get_docs_with_titles(self):
+        bdocs = Bdocs(PATH)
+        docs:doc[str,DocPath] = bdocs.get_docs_with_titles("/app/home/teams/todos/assignee")
+        #print(f"test_get_docs_with_titles: all labeled docs: {docs}")
+        self.assertEqual(len(docs), 4, msg=f'docs must have four docpath with titles: {docs}')
+        found_app = False
+        found_assignee = False
+        found_new = False
+        found_edit = False
+        for k,v in docs.items():
+            if v == '/app':
+                found_app = True
+            elif v == '/app/home/teams/todos/assignee':
+                found_assignee = True
+            elif v == '/app/home/teams/todos/assignee#new_assignee':
+                found_new = True
+            elif v == '/app/home/teams/todos/assignee#edit_assignee':
+                found_edit = True
+        self.assertEqual(found_app, True, msg="didn't find app")
+        self.assertEqual(found_assignee, True, msg="didn't find assignee")
+        self.assertEqual(found_new, True, msg="didn't find new")
+        self.assertEqual(found_edit, True, msg="didn't find edit")
+
+
 

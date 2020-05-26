@@ -1,7 +1,7 @@
 import os
 from  uuid import uuid4
 import shutil
-from typing import Optional, Union
+from typing import Optional, Union, List, Tuple, Dict
 from cdocs.contextual_docs import Doc, FilePath, DocPath, JsonDict
 from bdocs.building_docs import BuildingDocs
 from cdocs.cdocs import Cdocs, BadDocPath
@@ -19,6 +19,8 @@ from bdocs.simple_writer import SimpleWriter
 from bdocs.simple_walker import SimpleWalker
 from bdocs.bdocs_config import BdocsConfig
 from bdocs.simple_deleter import SimpleDeleter
+from bdocs.search_options import SearchOptions
+from bdocs.printer import Printer
 
 
 class Bdocs(BuildingDocs):
@@ -106,5 +108,93 @@ class Bdocs(BuildingDocs):
         if not os.path.exists(zipfile):
             raise Exception(f"no file at {zipfile}")
         self.zipper.unzip_doc_tree(zipfile)
+
+    def get_docs_with_titles(self, path:DocPath, options:Optional[SearchOptions]=None) -> Dict[str, DocPath]:
+        cdocs = Cdocs(self.get_docs_root())
+        tree = self.get_doc_tree()
+        Printer().print_tree(tree)
+        tokens = cdocs.get_tokens(path)
+        Printer().print_tree(tokens)
+        path = path.strip('/\\')
+        pathnames = path.split("/")
+        hashmark = self.config.get("filenames", "hashmark")
+        results = {}
+        print("results:")
+        for k, v in tokens.items():
+            print(f"\n   looking for: {k}:{v} with {pathnames[0]}")
+            result = self._d( pathnames, tree , k, [], options )
+            if result is not None:
+                docpath = ""
+                for _ in result[1]:
+                    docpath += ("/"+_) if _.find(hashmark) == -1 else _
+                results[v] = docpath
+                print(f"   ...docpath: {docpath}, name: {v} ")
+        return results
+
+#
+#
+#  doesn't yet search below the original docpath, but it should.
+#  see comment below.
+#
+    def _d( self, path:List[str], tree:JsonDict, searchkey:str, \
+            currentpath:List[str], options:Optional[SearchOptions]=None, \
+            recurse=True) -> Tuple[str, DocPath]:
+        debugname = "no"
+        if path == [] and options is not None and options.lookdown:
+            self._load_paths_and_restart_d(path, tree, searchkey, currentpath, options)
+        if path == []:
+            return None
+
+        thisname = path[0:1][0] if len(path) > 1 else path[0]
+        if currentpath == [] or currentpath[-1] != thisname:
+            currentpath.append(thisname)
+
+        if searchkey == debugname:
+            print(f"     thisname: {thisname}")
+            print(f"     path: {path}")
+            print(f"     currentpath: {currentpath}")
+
+        for k, v in tree.items():
+            if searchkey == debugname:
+                print(f"     searchkey: {searchkey}, k:v: {k}:{v}")
+            if k == searchkey and type(v).__name__ != 'dict':
+                #
+                # if filename matches the directory we don't add to the path
+                #     given /app/home: home.xml == home so we don't add home to the path
+                #
+                hashmark = self.config.get("filenames", "hashmark")
+                matches = v == thisname
+                if searchkey == debugname:
+                    print(f"     v == thisname: {thisname} ")
+                    print(f"     v == thisname: {thisname} or == path0: {path[0]} ")
+                    print(f"     _d.matches: matches: {matches}")
+                    if (len(path) >= 1):
+                        print(f"     {path}, {len(path)}, v, {path[0]}")
+                    else:
+                        print(f"     {path}, {len(path)}, v, {path}")
+                    print(f"     _d.matches: v == {thisname}, matches: {matches}")
+                if matches:
+                    pass
+                else:
+                    currentpath.append(hashmark+v )
+                return (searchkey, currentpath, v)
+        for k,v in tree.items():
+            if type(v).__name__ == 'dict' and k == path[0]:
+                path = path[1:] if len(path) > 1 else path
+                recurse = len(path)>1
+                return self._d( path, v, searchkey, currentpath, \
+                       options, recurse=recurse)
+        return None
+
+    # todo: get a list of paths going below the original docpath
+    #       iterate over the list calling _d for each docpath
+    #       return array of results to _d
+    #       figure out how to _d can return an array
+    def _load_paths_and_restart_d(self, path:List[str], tree:JsonDict, searchkey:str, \
+            currentpath:List[str], options:SearchOptions ) -> Tuple[str,DocPath]:
+        # we already went down so need to not loop
+        options.lookdown = False
+        return []
+
 
 
