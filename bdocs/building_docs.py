@@ -1,5 +1,6 @@
 import abc
-from typing import Union
+from typing import Union, Optional, Dict
+from bdocs.search_options import SearchOptions
 from cdocs.contextual_docs import FilePath, DocPath, Doc, JsonDict
 
 class BuildingDocs(metaclass=abc.ABCMeta):
@@ -40,5 +41,19 @@ class BuildingDocs(metaclass=abc.ABCMeta):
     def get_doc_tree(self) -> JsonDict:
         pass
 
+    # belongs in cdocs
+    @abc.abstractmethod
+    def get_docs_with_titles(self, path:DocPath, options:Optional[SearchOptions]=None) -> Dict[str, DocPath]:
+        pass
+
+    @abc.abstractmethod
+    def zip_doc_tree(self) -> FilePath:
+        pass
+
+    # this doesn't really belong here because each Bdocs has
+    # its own root and shouldn't be messing around with unzipping
+    # another root
+    def unzip_doc_tree(self, zipfile:FilePath) -> None:
+        pass
 
 
