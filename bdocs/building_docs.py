@@ -13,6 +13,14 @@ class BuildingDocs(metaclass=abc.ABCMeta):
         pass
 
     @abc.abstractmethod
+    def move_doc(self, fromdoc:DocPath, todoc:DocPath) -> None:
+        pass
+
+    @abc.abstractmethod
+    def copy_doc(self, fromdoc:DocPath, todoc:DocPath) -> None:
+        pass
+
+    @abc.abstractmethod
     def delete_doc(self, path:DocPath) -> None:
         pass
 
@@ -28,6 +36,9 @@ class BuildingDocs(metaclass=abc.ABCMeta):
     def doc_exists(self, path:DocPath) -> bool:
         pass
 
+    @abc.abstractmethod
     def get_doc_tree(self) -> JsonDict:
         pass
+
+
 

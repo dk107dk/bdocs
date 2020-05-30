@@ -14,11 +14,59 @@ HOME:DocPath = "/app/home"
 
 class BdocsTests(unittest.TestCase):
 
+    noise = False
+    def _print(self, text:str) -> None:
+        if self.noise:
+            print(text)
+
+    def test_move_doc(self):
+        self._print(f"BdocsTests.test_move_doc")
+        cdocs = Cdocs(PATH)
+        bdocs = Bdocs(PATH)
+        moving = "I'm moving!"
+        fromdoc = "/app/home/teams#added_doc"
+        todoc = "/app/home/teams#moved_doc"
+        bdocs.put_doc(fromdoc, moving)
+        doc = cdocs.get_doc(fromdoc)
+        self.assertIsNotNone(doc, msg=f"{doc} at {fromdoc} must be there")
+        bdocs.move_doc(fromdoc, todoc)
+        doc = cdocs.get_doc(fromdoc)
+        self.assertIsNone(doc, msg=f"{doc} at {fromdoc} must be none")
+        doc = cdocs.get_doc(todoc)
+        moved = doc.find(moving)
+        self.assertNotEqual(moved,-1, msg="{doc} must have {moving}")
+        bdocs.delete_doc(todoc)
+        doc = cdocs.get_doc(todoc)
+        self.assertIsNone(doc, msg=f"{doc} at {todoc} must be none")
+
+    def test_copy_doc(self):
+        self._print(f"BdocsTests.test_copy_doc")
+        cdocs = Cdocs(PATH)
+        bdocs = Bdocs(PATH)
+        copying = "I'm a copy!"
+        fromdoc = "/app/home/teams#source_doc"
+        todoc = "/app/home/teams#copyed_doc"
+        bdocs.put_doc(fromdoc, copying)
+        doc = cdocs.get_doc(fromdoc)
+        self.assertIsNotNone(doc, msg=f"{doc} at {fromdoc} must be there")
+        bdocs.copy_doc(fromdoc, todoc)
+        doc = cdocs.get_doc(fromdoc)
+        self.assertIsNotNone(doc, msg=f"{doc} at {fromdoc} must still be there")
+        doc = cdocs.get_doc(todoc)
+        copied = doc.find(copying)
+        self.assertNotEqual(copied,-1, msg="{doc} must have {copying}")
+        bdocs.delete_doc(todoc)
+        doc = cdocs.get_doc(todoc)
+        self.assertIsNone(doc, msg=f"{doc} at {todoc} must be none")
+        bdocs.delete_doc(fromdoc)
+        doc = cdocs.get_doc(fromdoc)
+        self.assertIsNone(doc, msg=f"{doc} at {fromdoc} must be none")
+
     def test_get_doc_root_path(self):
-        #print(f"BdocsTests.test_get_doc_root_path")
+        self._print(f"BdocsTests.test_get_doc_root_path")
         bdocs = Bdocs(PATH)
         path = bdocs.get_docs_root()
-        #print(f"test_get_doc_root_path: docs root is {path}")
+        self._print(f"test_get_doc_root_path: docs root is {path}")
         self.assertTrue( os.path.exists(path), msg="docs root must exsit" )
         self.assertEqual(path, PATH)
 
@@ -74,7 +122,7 @@ class BdocsTests(unittest.TestCase):
     def test_get_docs_with_titles(self):
         bdocs = Bdocs(PATH)
         docs:doc[str,DocPath] = bdocs.get_docs_with_titles("/app/home/teams/todos/assignee")
-        #print(f"test_get_docs_with_titles: all labeled docs: {docs}")
+        self._print(f"test_get_docs_with_titles: all labeled docs: {docs}")
         self.assertEqual(len(docs), 4, msg=f'docs must have four docpath with titles: {docs}')
         found_app = False
         found_assignee = False

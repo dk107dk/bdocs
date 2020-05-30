@@ -10,12 +10,14 @@ from bdocs.writer import Writer
 from bdocs.zipper import Zipper
 from bdocs.walker import Walker
 from cdocs.pather import Pather
+from bdocs.mover import Mover
 from bdocs.deleter import Deleter
 from bdocs.rotater import Rotater
 from bdocs.simple_rotater import SimpleRotater
 from bdocs.simple_zipper import SimpleZipper
 from cdocs.simple_pather import SimplePather
 from bdocs.simple_writer import SimpleWriter
+from bdocs.simple_mover import SimpleMover
 from bdocs.simple_walker import SimpleWalker
 from bdocs.bdocs_config import BdocsConfig
 from bdocs.simple_deleter import SimpleDeleter
@@ -31,10 +33,16 @@ class Bdocs(BuildingDocs):
         self._config = cfg
         self._writer = SimpleWriter()
         self._walker = SimpleWalker()
+        #self._mover = SimpleMover(cfg)
         self._deleter = SimpleDeleter()
         self._zipper = SimpleZipper(cfg)
         self._rotater = SimpleRotater()
+        self._mover = SimpleMover(cfg, doc_root)
         self._pather = SimplePather(self._docs_root, cfg.get_config_path()) if cfg.pather is None else cfg.pather
+
+    @property
+    def mover(self) -> Mover:
+        return self._mover
 
     @property
     def zipper(self) -> Zipper:
@@ -77,6 +85,12 @@ class Bdocs(BuildingDocs):
             bs = doc.encode()
         self.writer.write(filepath, bs)
 
+    def move_doc(self, fromdoc:DocPath, todoc:DocPath) -> None:
+        self.mover.move_doc(fromdoc,todoc)
+
+    def copy_doc(self, fromdoc:DocPath, todoc:DocPath) -> None:
+        self.mover.copy_doc(fromdoc,todoc)
+
     def delete_doc(self, path:DocPath) -> None:
         filepath:FilePath = self.pather.get_full_file_path(path)
         self.deleter.delete(filepath)
@@ -109,6 +123,7 @@ class Bdocs(BuildingDocs):
             raise Exception(f"no file at {zipfile}")
         self.zipper.unzip_doc_tree(zipfile)
 
+    # arguably this method belongs on Cdocs. not worried about that atm.
     def get_docs_with_titles(self, path:DocPath, options:Optional[SearchOptions]=None) -> Dict[str, DocPath]:
         cdocs = Cdocs(self.get_docs_root())
         tree = self.get_doc_tree()

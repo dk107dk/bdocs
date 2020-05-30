@@ -5,12 +5,17 @@ import shutil
 
 class RotateTests(unittest.TestCase):
 
+    noise = False
+    def _print(self, text:str) -> None:
+        if self.noise:
+            print(text)
+
     def test_rotate_file(self):
-        #print(f"RotateTests.test_rotate")
+        self._print(f"RotateTests.test_rotate")
         r = SimpleRotater()
         dirname = os.getcwd() +"/tests/resources/"
         filename = dirname + "rotateme.zip"
-        #print(f"RotateTests.test_rotate: filename: {filename}")
+        self._print(f"RotateTests.test_rotate: filename: {filename}")
         newname = "__rotateme.zip"
         newfile = dirname + newname
         shutil.copyfile(filename, newfile )
