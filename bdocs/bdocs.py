@@ -1,6 +1,7 @@
 import os
 from  uuid import uuid4
 import shutil
+import logging
 from typing import Optional, Union, List, Tuple, Dict
 from cdocs.contextual_docs import Doc, FilePath, DocPath, JsonDict
 from bdocs.building_docs import BuildingDocs
@@ -79,10 +80,12 @@ class Bdocs(BuildingDocs):
 
     def put_doc(self, path:DocPath, doc:Union[bytes,Doc]) -> None:
         filepath:FilePath = self.pather.get_full_file_path(path)
+        print(f"put_doc: path: {path}, filepath: {filepath} ")
         if type(doc) == 'bytes':
             bs = doc
         else:
             bs = doc.encode()
+        print(f"put_doc: path: {path}, filepath: {filepath} ")
         self.writer.write(filepath, bs)
 
     def move_doc(self, fromdoc:DocPath, todoc:DocPath) -> None:
@@ -97,12 +100,14 @@ class Bdocs(BuildingDocs):
 
     def delete_doc_tree(self, path:DocPath) -> None:
         filepath = self.get_dir_for_docpath(path)
-        self.deleter.delete(filepath)
+        self.deleter.delete_doc_tree(filepath)
 
     def get_dir_for_docpath(self, path:DocPath) -> FilePath:
+        logging.info(f"get_dir_for_docpath: root: {self.get_docs_root()} path: {path}")
         filepath:FilePath = self.pather.get_full_file_path(path)
-        index = filepath.rindex(".")
-        filepath = filepath[0:index]
+        logging.info(f"bdocs.get_dir_for_docpath: filepath: {filepath} from path: {path}")
+        if filepath.find(".") > -1:
+            filepath = filepath[0:filepath.rindex(".")]
         return filepath
 
     def doc_exists(self, path:DocPath) -> bool:
@@ -113,7 +118,8 @@ class Bdocs(BuildingDocs):
         return self.walker.get_doc_tree(self)
 
     def zip_doc_tree(self) -> FilePath:
-        return self.zipper.zip(self.get_dir_for_docpath("/"))
+        dir = self.get_dir_for_docpath("/")
+        return self.zipper.zip(dir)
 
     # this doesn't really belong here because this Bdocs has
     # its own root and shouldn't be messing around with unzipping

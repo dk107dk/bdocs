@@ -6,18 +6,40 @@ from cdocs.contextual_docs import DocPath, FilePath
 import unittest
 import os
 import shutil
+import logging
 
 BASE:FilePath = "/Users/davidkershaw/dev/bdocs"
 PATH:FilePath = BASE + "/docs/example"
 TMP:FilePath = BASE + "/tmp"
 HOME:DocPath = "/app/home"
 
+
+import inspect
+
 class BdocsTests(unittest.TestCase):
+
+    def _debug(self):
+        self.logger.setLevel(level=logging.DEBUG)
+        self.logger.debug("SET THE LEVEL TO DEBUG")
+
+    def _warning(self):
+        self.logger.setLevel(level=logging.WARNING)
+        self.logger.warning("SET THE LEVEL TO WARNING")
+
+    logger = logging.getLogger('')
 
     noise = False
     def _print(self, text:str) -> None:
         if self.noise:
             print(text)
+
+    def test_zip_doc_tree(self):
+        bdocs = Bdocs(PATH)
+        azip = bdocs.zip_doc_tree()
+        b = os.path.exists(azip)
+        self.assertEqual(b, True, msg=f'{azip} must exist')
+        if b:
+            os.remove(azip)
 
     def test_move_doc(self):
         self._print(f"BdocsTests.test_move_doc")
@@ -84,6 +106,7 @@ class BdocsTests(unittest.TestCase):
     def test_delete_dir(self):
         bdocs = Bdocs(PATH)
         cdocs = Cdocs(PATH)
+        #self._debug()
         filepath = bdocs.get_dir_for_docpath(HOME)
         apath = filepath + "/deleteme"
         os.mkdir(apath)
@@ -93,21 +116,13 @@ class BdocsTests(unittest.TestCase):
         filepath = bdocs.get_dir_for_docpath(HOME+"/deleteme")
         b = os.path.exists(filepath)
         self.assertEqual(b, False, msg=f'{filepath} must not exist')
+        #self._warning()
 
     def test_get_doc_tree(self):
         bdocs = Bdocs(PATH + '/app/home/teams/todos')
         tree = bdocs.get_doc_tree()
-        #Printer().print_tree(tree)
         self.assertIn( 'assignee', tree, msg=f'tree must include "assignee"' )
         self.assertEqual( len(tree), 3, msg=f'tree must have three keys: {tree}')
-
-    def test_zip_doc_tree(self):
-        bdocs = Bdocs(PATH)
-        azip = bdocs.zip_doc_tree()
-        b = os.path.exists(azip)
-        self.assertEqual(b, True, msg=f'{azip} must exist')
-        if b:
-            os.remove(azip)
 
     def test_unzip_doc_tree(self):
         bdocs = Bdocs(PATH)

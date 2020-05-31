@@ -1,5 +1,5 @@
 import abc
-from cdocs.contextual_docs import FilePath
+from cdocs.contextual_docs import Path
 
 
 class Deleter(metaclass=abc.ABCMeta):
@@ -9,8 +9,16 @@ class Deleter(metaclass=abc.ABCMeta):
     """
 
     @abc.abstractmethod
-    def delete(self, filepath:FilePath) -> None:
+    def delete(self, filepath:Path) -> None:
         pass
 
-    def isdir(self, filepath:FilePath) -> bool:
+    @abc.abstractmethod
+    def delete_doc_tree(self, filepath:Path) -> None:
+        """
+        some implementations may require this method
+        be used to delete directory-like paths
+        """
+        pass
+
+    def isdir(self, filepath:Path) -> bool:
         pass

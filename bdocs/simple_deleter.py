@@ -16,6 +16,9 @@ class SimpleDeleter(Deleter):
             logging.error(f'SimpleDeleter.delete: cannot delete: {e}')
             return None
 
+    def delete_doc_tree(self, filepath:FilePath) -> None:
+        self.delete(filepath)
+
     def isdir(self, filepath:FilePath) -> bool:
         return os.path.isdir(filepath)
 

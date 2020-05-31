@@ -1,3 +1,4 @@
 jinja2==2.11.2
-cdocs==0.0.9
+cdocs==0.0.16
 pypinfo
+inflect
