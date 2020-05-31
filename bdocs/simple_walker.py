@@ -35,8 +35,29 @@ class SimpleWalker(Walker):
                 jsondict[item] = subtree
                 self._collect_tree(itempath, subtree)
 
+    def subtract(self, subtractthis:JsonDict, fromthat:JsonDict) -> JsonDict:
+        ft = self._clone(fromthat)
+        return self._subtract(subtractthis, ft)
 
+    def _clone(self, adict:JsonDict) -> JsonDict:
+        newdict = {}
+        for k,v in adict:
+            if self._dict(v):
+                newdict[k] = self._clone(v)
+            else:
+                newdict[k] = v
+        return newdict
 
+    def _isdict(self, something):
+        return type(something).__name__ == 'dict'
+
+    def _subtract(self, subtractthis:JsonDict, fromthat:JsonDict ) -> JsonDict:
+        for k,v in subtractthis:
+            if self._dict(v) and k in fromthat and self._dict(fromthat[k]):
+                return self._subtract(v, fromthat[k])
+            else:
+                fromthat.pop(k)
+        return fromthat
 
 
 

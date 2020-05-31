@@ -127,9 +127,9 @@ class Bdocs(BuildingDocs):
     def get_docs_with_titles(self, path:DocPath, options:Optional[SearchOptions]=None) -> Dict[str, DocPath]:
         cdocs = Cdocs(self.get_docs_root())
         tree = self.get_doc_tree()
-        Printer().print_tree(tree)
+        #Printer().print_tree(tree)
         tokens = cdocs.get_tokens(path)
-        Printer().print_tree(tokens)
+        #Printer().print_tree(tokens)
         path = path.strip('/\\')
         pathnames = path.split("/")
         hashmark = self.config.get("filenames", "hashmark")
