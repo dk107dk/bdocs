@@ -5,6 +5,7 @@ import logging
 from typing import Optional, Union, List, Tuple, Dict
 from cdocs.contextual_docs import Doc, FilePath, DocPath, JsonDict
 from bdocs.building_docs import BuildingDocs
+from bdocs.multi_building_docs import MultiBuildingDocs
 from cdocs.cdocs import Cdocs, BadDocPath
 from cdocs.config import Config
 from bdocs.writer import Writer
@@ -28,13 +29,13 @@ from bdocs.printer import Printer
 
 class Bdocs(BuildingDocs):
 
-    def __init__(self, doc_root:FilePath, config:Optional[Config]=None):
+    def __init__(self, doc_root:FilePath, config:Optional[Config]=None, building:Optional[MultiBuildingDocs]=None):
         self._docs_root = doc_root
+        self._block = building
         cfg = BdocsConfig(None) if config is None else config
         self._config = cfg
         self._writer = SimpleWriter()
         self._walker = SimpleWalker()
-        #self._mover = SimpleMover(cfg)
         self._deleter = SimpleDeleter()
         self._zipper = SimpleZipper(cfg)
         self._rotater = SimpleRotater()
@@ -44,6 +45,10 @@ class Bdocs(BuildingDocs):
     @property
     def mover(self) -> Mover:
         return self._mover
+
+    @property
+    def block(self) -> MultiBuildingDocs:
+        return self._block
 
     @property
     def zipper(self) -> Zipper:

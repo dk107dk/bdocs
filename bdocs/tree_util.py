@@ -25,6 +25,12 @@ class TreeUtil(object):
     # argument tree. therefore, if merging multiple trees always put
     # the next tree as first argument. see unit test.
     def union( self, one:JsonDict, two:JsonDict, overlap:Dict={}, path:List=[], counts:Dict={}) -> JsonDict:
+        """
+        one and two: the trees to union.
+        overlaps: captures any values that are not returned in the unioned tree.
+        path: a list of path names that are used to point to items in the trees.
+           the first item in paths can serve to indicate the source tree.
+        """
         three = self.clone(one)
         logging.info(f"TreeUtil.union: tree one: {three}, tree two: {two}, overlap: {overlap}, path: {path}")
         self._union(three, two, overlap, path, counts)
