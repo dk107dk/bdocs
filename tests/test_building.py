@@ -16,5 +16,32 @@ class BlockTests(unittest.TestCase):
         self._print(f"BlockTests.test_join")
         metadata = ContextMetaData()
         building = Block(metadata)
-        tree = building.join_trees(["public", "internal", "images"])
+        tree = building.join_trees(["internal", "images"])
         self._print(f"BlockTests.test_join: tree: {tree}")
+        treestr = str(tree)
+        self._print("BlockTests.test_join: treestr: {treestr}")
+        self.assertNotEqual( -1, treestr.find("3-copy.png"), msg=f"must include: 3-copy.png")
+        self.assertNotEqual( -1, treestr.find("tokens.json"), msg=f"must include: tokens.json")
+        self.assertNotEqual( -1, treestr.find("404.xml"), msg=f"must include: 404.xml")
+        self.assertNotEqual( -1, treestr.find("delete_assignee.xml"), msg=f"must include: delete_assignee.xml")
+
+    def test_tree_list(self):
+        self._print(f"BlockTests.test_tree_list")
+        metadata = ContextMetaData()
+        building = Block(metadata)
+        treelist = building.list_trees(["public", "internal", "images"])
+        self._print(f"BlockTests.test_tree_list: treelist: {treelist}")
+        for line in treelist:
+            print(f"   {line}")
+        # test for a selection of paths expected
+        paths = []
+        paths.append("public/app/home/teams/todos/assignee/assignee.xml")
+        paths.append("public/app/home/teams/tokens.json")
+        paths.append("public/app/home/teams/link_check.html")
+        paths.append("internal/404.xml")
+        paths.append("internal/app/home/teams/delete_assignee.xml")
+        paths.append("images/app/home/teams/todos/tokens.json")
+        paths.append("images/app/home/teams/todos/3-copy.png")
+        for path in paths:
+            self.assertIn(path, treelist, msg=f"path not in treelist: {path}")
+

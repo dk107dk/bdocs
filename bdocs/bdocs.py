@@ -12,9 +12,11 @@ from bdocs.writer import Writer
 from bdocs.zipper import Zipper
 from bdocs.walker import Walker
 from cdocs.pather import Pather
+from bdocs.rooter import Rooter
 from bdocs.mover import Mover
 from bdocs.deleter import Deleter
 from bdocs.rotater import Rotater
+from bdocs.simple_rooter import SimpleRooter
 from bdocs.simple_rotater import SimpleRotater
 from bdocs.simple_zipper import SimpleZipper
 from cdocs.simple_pather import SimplePather
@@ -39,8 +41,18 @@ class Bdocs(BuildingDocs):
         self._deleter = SimpleDeleter()
         self._zipper = SimpleZipper(cfg)
         self._rotater = SimpleRotater()
+        self._rooter = SimpleRooter(self)
         self._mover = SimpleMover(cfg, doc_root)
         self._pather = SimplePather(self._docs_root, cfg.get_config_path()) if cfg.pather is None else cfg.pather
+
+    @property
+    def root_name(self):
+        i = self.docs_root.rindex("/")
+        return self.docs_root[i+1:]
+
+    @property
+    def docs_root(self):
+        return self._docs_root
 
     @property
     def mover(self) -> Mover:
@@ -63,6 +75,14 @@ class Bdocs(BuildingDocs):
         return self._rotater
 
     @property
+    def rooter(self) -> Rooter:
+        return self._rooter
+
+    @rooter.setter
+    def rooter(self, rooter:Rooter) -> None:
+        self._rooter = rooter
+
+    @property
     def writer(self) -> Writer:
         return self._writer
 
@@ -79,6 +99,14 @@ class Bdocs(BuildingDocs):
         return self._config
 
 # ------------------
+
+    def init_root(self):
+        root = self.get_docs_root()
+        # check for existing dir, etc.
+        self.rooter.init_root()
+
+    def delete_root(self):
+        self.rooter.delete_root()
 
     def get_docs_root(self) -> FilePath:
         return self._docs_root
@@ -126,13 +154,6 @@ class Bdocs(BuildingDocs):
         dir = self.get_dir_for_docpath("/")
         return self.zipper.zip(dir)
 
-    # this doesn't really belong here because this Bdocs has
-    # its own root and shouldn't be messing around with unzipping
-    # another root
-    def unzip_doc_tree(self, zipfile:FilePath) -> None:
-        if not os.path.exists(zipfile):
-            raise Exception(f"no file at {zipfile}")
-        self.zipper.unzip_doc_tree(zipfile)
 
     # arguably this method belongs on Cdocs. not worried about that atm.
     def get_docs_with_titles(self, path:DocPath, options:Optional[SearchOptions]=None) -> Dict[str, DocPath]:

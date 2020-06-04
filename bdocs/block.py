@@ -6,6 +6,10 @@ from bdocs.bdocs import Bdocs
 from bdocs.tree_util import TreeUtil
 from cdocs.contextual_docs import FilePath, DocPath, Doc, JsonDict
 from cdocs.context import ContextMetaData
+from cdocs.cdocs import Cdocs,BadDocPath
+from bdocs.zipper import Zipper
+from bdocs.simple_zipper import SimpleZipper
+import logging
 
 class Block(MultiBuildingDocs):
 
@@ -14,6 +18,9 @@ class Block(MultiBuildingDocs):
         self._metadata = metadata
         self._keyed_bdocs = { k : Bdocs(v, metadata.config, self) for k,v in metadata.keyed_roots.items() }
         self._bdocs = [ v for k,v in self._keyed_bdocs.items() ]
+        self._zipper = SimpleZipper(self.metadata.config)
+
+#-------------
 
     @property
     def config(self):
@@ -23,16 +30,32 @@ class Block(MultiBuildingDocs):
     def metadata(self):
         return self._metadata
 
+    @property
+    def zipper(self) -> Zipper:
+        return self._zipper
+
+#-------------
+
+    def get_root(self, rootname:str) -> Bdocs:
+        return self._keyed_bdocs[rootname]
+
+    def unzip_doc_tree(self, zipfile:FilePath) -> None:
+        if not os.path.exists(zipfile):
+            raise Exception(f"no file at {zipfile}")
+        self.zipper.unzip_doc_tree(zipfile)
+
     def join_trees(self, rootnames:List[str]) -> JsonDict:
-        print(f"Block.join_trees")
-        tu = TreeUtil()
         trees = [ self._keyed_bdocs[root].get_doc_tree() for root in rootnames]
+        return self._join_trees(trees)
+
+    def _join_trees(self, trees:List[JsonDict]) -> JsonDict:
         overlaps = {}
         addright = 0
         addleft = 0
         overlap = 0
         result = trees[0]
         counts = {}
+        tu = TreeUtil()
         for treenum in range(1,len(trees)):
             one = trees[treenum]
             result = tu.union( one, result, overlap=overlaps, counts=counts)
@@ -42,37 +65,76 @@ class Block(MultiBuildingDocs):
             overlap = overlap + r if r is not None else overlap
             r = counts.get('add_left')
             addleft = addleft + r if r is not None else addleft
-        print(f"Block.join_trees. adds: al,ol,ar: {addleft}, {overlap}, {addright}")
-        print(f"Block.join_trees. overlaps: {overlaps}")
-        print(f"Block.join_trees. result: {result}")
+        logging.info(f"Block.join_trees. adds: al,ol,ar: {addleft}, {overlap}, {addright}")
+        logging.info(f"Block.join_trees. overlaps: {overlaps}")
+        logging.info(f"Block.join_trees. result: {result}")
         return result
 
+    def list_trees(self, rootnames:List[str], add_root_names:bool=True ) -> List[str]:
+        tree = None
+        treelist = []
+        if len(rootnames) == 1:
+            bdocs = self.get_root(rootnames[0])
+            tree = bdocs.get_doc_tree()
+            treelist = self._tree_to_list(tree, [], [rootnames[0]] if add_root_names else [] )
+        else:
+            for root in rootnames:
+                bdocs = self.get_root(root)
+                tree = bdocs.get_doc_tree()
+                tl = self._tree_to_list(tree, [], [root] if add_root_names else [] )
+                treelist += tl
+        treelist.sort()
+        return treelist
+
+    def _tree_to_list(self, tree:JsonDict, treelist:List[str]=[], path:List[str]=[]) -> List[str]:
+        for k,v in tree.items():
+            path.append(k)
+            if type(v).__name__ == 'dict':
+                treelist = self._tree_to_list(v, treelist, path)
+            else:
+                treelist.append("/".join(path))
+            path = path[0:-1]
+        return treelist
+
     def put_doc(self, rootname:str, path:DocPath, doc:Union[bytes,Doc]) -> None:
-        pass
+        self.get_root().put_doc(path, doc)
 
     def move_doc(self, fromrootname:str, fromdoc:DocPath, torootname:str, todoc:DocPath) -> None:
-        pass
+        cdocs = Cdocs(fromrootname, self.metadata.config)
+        doc = cdocs.get_doc(fromdoc)
+        if doc is None:
+            raise BadDocPath(f"No such doc: {fromdoc}")
+        self.put_doc(torootname, todoc, doc)
+        self.delete_doc([fromrootname], fromdoc)
 
     def copy_doc(self, fromrootname:str, fromdoc:DocPath, torootname:str, todoc:DocPath) -> None:
-        pass
+        cdocs = Cdocs(fromrootname, self.metadata.config)
+        doc = cdocs.get_doc(fromdoc)
+        if doc is None:
+            raise BadDocPath(f"No such doc: {fromdoc}")
+        self.put_doc(torootname, todoc, doc)
 
     def delete_doc(self, rootnames:List[str], path:DocPath) -> None:
-        pass
+        for rootname in rootnames:
+            self.get_root(rootname).delete_doc(path)
 
     def delete_doc_tree(self, rootnames:List[str], path:DocPath) -> None:
-        pass
+        for rootname in rootnames:
+            self.get_root(rootname).delete_doc_tree(path)
 
     def get_dir_for_docpath(self, rootname:str, path:DocPath) -> FilePath:
-        pass
+        return self.get_root(rootname).get_dir_for_docpath(path)
 
     def doc_exists(self, rootnames:List[str], path:DocPath) -> bool:
-        pass
+        """ docpath must exist in all roots """
+        for rootname in rootnames:
+            if not self.get_root(rootname).doc_exists(path):
+                return False
+        return True
 
     def get_doc_tree(self, rootname:str) -> JsonDict:
-        pass
+        return self.get_root(rootname).get_doc_tree()
 
     def zip_doc_tree(self, rootname:str) -> FilePath:
-        pass
-
-
+        return self.get_root(rootname).zip_doc_tree()
 

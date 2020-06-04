@@ -6,7 +6,19 @@ from cdocs.contextual_docs import FilePath, DocPath, Doc, JsonDict
 class MultiBuildingDocs(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod
+    def unzip_doc_tree(self, zipfile:FilePath) -> None:
+        pass
+
+    @abc.abstractmethod
+    def get_root(self, rootname:str):  # cannot hint return type Bdocs because circular
+        pass
+
+    @abc.abstractmethod
     def join_trees(self, rootnames:List[str]) -> JsonDict:
+        pass
+
+    @abc.abstractmethod
+    def list_trees(self, rootnames:List[str], add_root_names:bool=True ) -> List[str]:
         pass
 
     @abc.abstractmethod
