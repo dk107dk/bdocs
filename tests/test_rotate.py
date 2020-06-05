@@ -2,6 +2,8 @@ from bdocs.simple_rotater import SimpleRotater
 import unittest
 import os
 import shutil
+from bdocs.building_metadata import BuildingMetadata
+from bdocs.bdocs import Bdocs
 
 class RotateTests(unittest.TestCase):
 
@@ -12,7 +14,9 @@ class RotateTests(unittest.TestCase):
 
     def test_rotate_file(self):
         self._print(f"RotateTests.test_rotate")
-        r = SimpleRotater()
+        bdocs = Bdocs("/Users/davidkershaw/dev/bdocs/docs/example")
+        metadata = BuildingMetadata()
+        r = SimpleRotater(metadata, bdocs)
         dirname = os.getcwd() +"/tests/resources/"
         filename = dirname + "rotateme.zip"
         self._print(f"RotateTests.test_rotate: filename: {filename}")

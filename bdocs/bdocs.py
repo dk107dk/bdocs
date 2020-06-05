@@ -5,6 +5,7 @@ import logging
 from typing import Optional, Union, List, Tuple, Dict
 from cdocs.contextual_docs import Doc, FilePath, DocPath, JsonDict
 from bdocs.building_docs import BuildingDocs
+from bdocs.building_metadata import BuildingMetadata
 from bdocs.multi_building_docs import MultiBuildingDocs
 from cdocs.cdocs import Cdocs, BadDocPath
 from cdocs.config import Config
@@ -31,19 +32,34 @@ from bdocs.printer import Printer
 
 class Bdocs(BuildingDocs):
 
-    def __init__(self, doc_root:FilePath, config:Optional[Config]=None, building:Optional[MultiBuildingDocs]=None):
+    def __init__(self, doc_root:FilePath, \
+                 metadata:Optional[BuildingMetadata]=None, \
+                 buildings:Optional[MultiBuildingDocs]=None):
         self._docs_root = doc_root
-        self._block = building
-        cfg = BdocsConfig(None) if config is None else config
-        self._config = cfg
-        self._writer = SimpleWriter()
-        self._walker = SimpleWalker()
-        self._deleter = SimpleDeleter()
-        self._zipper = SimpleZipper(cfg)
-        self._rotater = SimpleRotater()
-        self._rooter = SimpleRooter(self)
-        self._mover = SimpleMover(cfg, doc_root)
-        self._pather = SimplePather(self._docs_root, cfg.get_config_path()) if cfg.pather is None else cfg.pather
+        self._block = buildings
+        self._metadata = metadata
+        if metadata is None:
+            self._config = BdocsConfig(None)
+        else:
+            self._config = metadata.config
+        self._writer = None
+        self._walker = None
+
+        self._deleter = None
+        self._zipper = None
+        self._rotater = None
+        self._rooter = None
+        self._mover = None
+        self._pather = None
+
+        self._use_writer = SimpleWriter#()
+        self._use_walker = SimpleWalker#()
+        self._use_deleter = SimpleDeleter#()
+        self._use_zipper = SimpleZipper#(cfg)
+        self._use_rotater = SimpleRotater#()
+        self._use_rooter = SimpleRooter#(self)
+        self._use_mover = SimpleMover#(cfg, doc_root)
+        self._use_pather = SimplePather#(self._docs_root, cfg.get_config_path()) if cfg.pather is None else cfg.pather
 
     @property
     def root_name(self):
@@ -53,29 +69,67 @@ class Bdocs(BuildingDocs):
     @property
     def docs_root(self):
         return self._docs_root
-
-    @property
-    def mover(self) -> Mover:
-        return self._mover
+    def get_doc_root(self): # matches Cdocs
+        return self.docs_root
 
     @property
     def block(self) -> MultiBuildingDocs:
         return self._block
 
     @property
+    def config(self) -> Config:
+        return self._config
+
+    @property
+    def metadata(self) -> BuildingMetadata:
+        return self._metadata
+
+# ---------------
+
+    @property
+    def mover(self) -> Mover:
+        if self._mover is None:
+            self._mover = self._use_mover(self.metadata, self)
+        return self._mover
+
+    @mover.setter
+    def mover(self, mover:Mover):
+        self._mover = mover
+
+    @property
     def zipper(self) -> Zipper:
+        if self._zipper is None:
+            self._zipper = self._use_zipper(self.metadata, self)
         return self._zipper
+
+    @zipper.setter
+    def zipper(self, zipper:Zipper):
+        self._zipper = zipper
 
     @property
     def deleter(self) -> Deleter:
+        if self._deleter is None:
+            self._deleter = self._use_deleter(self.metadata, self)
         return self._deleter
+
+    @deleter.setter
+    def deleter(self, deleter:Deleter):
+        self._deleter = deleter
 
     @property
     def rotater(self) -> Rotater:
+        if self._rotater is None:
+            self._rotater = self._use_rotater(self.metadata, self)
         return self._rotater
+
+    @rotater.setter
+    def rotater(self, rotater:Rotater):
+        self._rotater = rotater
 
     @property
     def rooter(self) -> Rooter:
+        if self._rooter is None:
+            self._rooter = self._use_rooter(self.metadata, self)
         return self._rooter
 
     @rooter.setter
@@ -84,25 +138,38 @@ class Bdocs(BuildingDocs):
 
     @property
     def writer(self) -> Writer:
+        if self._writer is None:
+            self._writer = self._use_writer(self.metadata, self)
         return self._writer
+
+    @writer.setter
+    def writer(self, writer:Writer) -> None:
+        self._writer = writer
 
     @property
     def walker(self) -> Walker:
+        if self._walker is None:
+            self._walker = self._use_walker(self.metadata, self)
         return self._walker
+
+    @walker.setter
+    def walker(self, walker:Walker) -> None:
+        self._walker = walker
 
     @property
     def pather(self) -> Pather:
+        if self._pather is None:
+            self._pather = self._use_pather(self.metadata, self)
         return self._pather
 
-    @property
-    def config(self) -> Config:
-        return self._config
+    @pather.setter
+    def pather(self, pather:Pather) -> None:
+        self._pather = pather
 
 # ------------------
 
     def init_root(self):
         root = self.get_docs_root()
-        # check for existing dir, etc.
         self.rooter.init_root()
 
     def delete_root(self):
@@ -113,12 +180,12 @@ class Bdocs(BuildingDocs):
 
     def put_doc(self, path:DocPath, doc:Union[bytes,Doc]) -> None:
         filepath:FilePath = self.pather.get_full_file_path(path)
-        print(f"put_doc: path: {path}, filepath: {filepath} ")
+        logging.info(f"Bdocs.put_doc: path: {path}, filepath: {filepath} ")
         if type(doc) == 'bytes':
             bs = doc
         else:
             bs = doc.encode()
-        print(f"put_doc: path: {path}, filepath: {filepath} ")
+        logging.info(f"Bdocs.put_doc: path: {path}, filepath: {filepath} ")
         self.writer.write(filepath, bs)
 
     def move_doc(self, fromdoc:DocPath, todoc:DocPath) -> None:
@@ -148,7 +215,7 @@ class Bdocs(BuildingDocs):
         return os.path.exists(filepath)
 
     def get_doc_tree(self) -> JsonDict:
-        return self.walker.get_doc_tree(self)
+        return self.walker.get_doc_tree()
 
     def zip_doc_tree(self) -> FilePath:
         dir = self.get_dir_for_docpath("/")

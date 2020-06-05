@@ -2,10 +2,10 @@ import abc
 from typing import Union, Optional, Dict, List
 from bdocs.search_options import SearchOptions
 from bdocs.multi_building_docs import MultiBuildingDocs
+from bdocs.building_metadata import BuildingMetadata
 from bdocs.bdocs import Bdocs
 from bdocs.tree_util import TreeUtil
 from cdocs.contextual_docs import FilePath, DocPath, Doc, JsonDict
-from cdocs.context import ContextMetaData
 from cdocs.cdocs import Cdocs,BadDocPath
 from bdocs.zipper import Zipper
 from bdocs.simple_zipper import SimpleZipper
@@ -14,11 +14,11 @@ import logging
 class Block(MultiBuildingDocs):
 
 
-    def __init__(self, metadata:ContextMetaData):
+    def __init__(self, metadata:BuildingMetadata):
         self._metadata = metadata
-        self._keyed_bdocs = { k : Bdocs(v, metadata.config, self) for k,v in metadata.keyed_roots.items() }
+        self._keyed_bdocs = { k : Bdocs(v, metadata, self) for k,v in metadata.keyed_roots.items() }
         self._bdocs = [ v for k,v in self._keyed_bdocs.items() ]
-        self._zipper = SimpleZipper(self.metadata.config)
+        self._zipper = SimpleZipper(self.metadata, None)
 
 #-------------
 

@@ -1,11 +1,12 @@
 from bdocs.git.git_rooter import GitRooter
+from bdocs.building_metadata import BuildingMetadata
 from bdocs.bdocs import Bdocs
 import os
 import unittest
 
 PATH = "/Users/davidkershaw/dev/bdocs/docs"
 ROOTNAME = "git_test"
-ROOT = path + "/" + ROOTNAME
+ROOT = PATH + "/" + ROOTNAME
 
 class GitTests(unittest.TestCase):
 
@@ -16,10 +17,11 @@ class GitTests(unittest.TestCase):
 
     def test_init(self):
         self._print(f"GitTests.test_init")
+        metadata = BuildingMetadata()
         bdocs = Bdocs(ROOT)
         if not os.path.exists(bdocs.docs_root):
             os.mkdir(bdocs.docs_root)
-        git_rooter = GitRooter(bdocs)
+        git_rooter = GitRooter(metadata, bdocs)
         bdocs.rooter = git_rooter
         bdocs.init_root()
         exist = os.path.exists( bdocs.docs_root)

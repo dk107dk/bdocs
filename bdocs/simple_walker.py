@@ -1,15 +1,20 @@
 import os
 from cdocs.contextual_docs import FilePath, JsonDict
+from bdocs.building_metadata import BuildingMetadata
 from bdocs.walker import Walker
 from cdocs.cdocs import BadDocPath
 import logging
 
 class SimpleWalker(Walker):
 
+    def __init__(self, metadata:BuildingMetadata, bdocs):
+        self._metadata = metadata
+        self._bdocs = bdocs
+
     # can't type hint Bdocs on the bdocs arg because it would
     # be a circular import ref.
-    def get_doc_tree(self, bdocs) -> JsonDict:
-        filepath = bdocs.get_dir_for_docpath("/")
+    def get_doc_tree(self) -> JsonDict:
+        filepath = self._bdocs.get_dir_for_docpath("/")
         jsondict = JsonDict(dict())
         if not os.path.isdir(filepath):
             raise BadDocPath(f"{filepath} is not a root directory")

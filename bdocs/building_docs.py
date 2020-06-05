@@ -3,6 +3,7 @@ from typing import Union, Optional, Dict
 from bdocs.search_options import SearchOptions
 from cdocs.contextual_docs import FilePath, DocPath, Doc, JsonDict
 
+
 class BuildingDocs(metaclass=abc.ABCMeta):
 
     @abc.abstractmethod

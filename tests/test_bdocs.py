@@ -1,5 +1,6 @@
 from bdocs.bdocs import Bdocs
 from bdocs.printer import Printer
+from bdocs.building_metadata import BuildingMetadata
 from cdocs.cdocs import Cdocs
 from cdocs.cdocs import BadDocPath
 from cdocs.contextual_docs import DocPath, FilePath
@@ -34,7 +35,8 @@ class BdocsTests(unittest.TestCase):
             print(text)
 
     def test_zip_doc_tree(self):
-        bdocs = Bdocs(PATH)
+        metadata = BuildingMetadata()
+        bdocs = Bdocs(PATH, metadata)
         azip = bdocs.zip_doc_tree()
         b = os.path.exists(azip)
         self.assertEqual(b, True, msg=f'{azip} must exist')
@@ -44,7 +46,8 @@ class BdocsTests(unittest.TestCase):
     def test_move_doc(self):
         self._print(f"BdocsTests.test_move_doc")
         cdocs = Cdocs(PATH)
-        bdocs = Bdocs(PATH)
+        metadata = BuildingMetadata()
+        bdocs = Bdocs(PATH, metadata)
         moving = "I'm moving!"
         fromdoc = "/app/home/teams#added_doc"
         todoc = "/app/home/teams#moved_doc"
@@ -64,7 +67,8 @@ class BdocsTests(unittest.TestCase):
     def test_copy_doc(self):
         self._print(f"BdocsTests.test_copy_doc")
         cdocs = Cdocs(PATH)
-        bdocs = Bdocs(PATH)
+        metadata = BuildingMetadata()
+        bdocs = Bdocs(PATH, metadata)
         copying = "I'm a copy!"
         fromdoc = "/app/home/teams#source_doc"
         todoc = "/app/home/teams#copyed_doc"
@@ -86,14 +90,16 @@ class BdocsTests(unittest.TestCase):
 
     def test_get_doc_root_path(self):
         self._print(f"BdocsTests.test_get_doc_root_path")
-        bdocs = Bdocs(PATH)
+        metadata = BuildingMetadata()
+        bdocs = Bdocs(PATH, metadata)
         path = bdocs.get_docs_root()
         self._print(f"test_get_doc_root_path: docs root is {path}")
         self.assertTrue( os.path.exists(path), msg="docs root must exsit" )
         self.assertEqual(path, PATH)
 
     def test_put_and_delete_doc(self):
-        bdocs = Bdocs(PATH)
+        metadata = BuildingMetadata()
+        bdocs = Bdocs(PATH, metadata)
         home = "I'm home!"
         bdocs.put_doc(HOME, home)
         cdocs = Cdocs(PATH)
@@ -104,7 +110,8 @@ class BdocsTests(unittest.TestCase):
         self.assertIsNone(doc, msg=f"{doc} must be none")
 
     def test_delete_dir(self):
-        bdocs = Bdocs(PATH)
+        metadata = BuildingMetadata()
+        bdocs = Bdocs(PATH, metadata)
         cdocs = Cdocs(PATH)
         #self._debug()
         filepath = bdocs.get_dir_for_docpath(HOME)
@@ -119,13 +126,15 @@ class BdocsTests(unittest.TestCase):
         #self._warning()
 
     def test_get_doc_tree(self):
-        bdocs = Bdocs(PATH + '/app/home/teams/todos')
+        metadata = BuildingMetadata()
+        bdocs = Bdocs(PATH + '/app/home/teams/todos', metadata)
         tree = bdocs.get_doc_tree()
         self.assertIn( 'assignee', tree, msg=f'tree must include "assignee"' )
         self.assertEqual( len(tree), 3, msg=f'tree must have three keys: {tree}')
 
     def test_unzip_doc_tree(self):
-        bdocs = Bdocs(PATH)
+        metadata = BuildingMetadata()
+        bdocs = Bdocs(PATH, metadata)
         shutil.copyfile(BASE+"/tests/resources/test.zip", BASE+"/tests/resources/____.zip" )
         bdocs.unzip_doc_tree( BASE+"/tests/resources/____.zip" )
         b = os.path.exists( BASE + "/docs/test")
@@ -135,7 +144,8 @@ class BdocsTests(unittest.TestCase):
             bdocs.config.remove_from_config("docs", "test")
 
     def test_get_docs_with_titles(self):
-        bdocs = Bdocs(PATH)
+        metadata = BuildingMetadata()
+        bdocs = Bdocs(PATH, metadata)
         docs:doc[str,DocPath] = bdocs.get_docs_with_titles("/app/home/teams/todos/assignee")
         self._print(f"test_get_docs_with_titles: all labeled docs: {docs}")
         self.assertEqual(len(docs), 4, msg=f'docs must have four docpath with titles: {docs}')

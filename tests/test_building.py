@@ -3,7 +3,7 @@ import unittest
 from bdocs.multi_building_docs import MultiBuildingDocs
 from bdocs.block import Block
 from cdocs.contextual_docs import FilePath, DocPath, Doc, JsonDict
-from cdocs.context import ContextMetaData
+from cdocs.context import ContextMetadata
 
 class BlockTests(unittest.TestCase):
 
@@ -14,7 +14,7 @@ class BlockTests(unittest.TestCase):
 
     def test_join(self):
         self._print(f"BlockTests.test_join")
-        metadata = ContextMetaData()
+        metadata = ContextMetadata()
         building = Block(metadata)
         tree = building.join_trees(["internal", "images"])
         self._print(f"BlockTests.test_join: tree: {tree}")
@@ -27,7 +27,7 @@ class BlockTests(unittest.TestCase):
 
     def test_tree_list(self):
         self._print(f"BlockTests.test_tree_list")
-        metadata = ContextMetaData()
+        metadata = ContextMetadata()
         building = Block(metadata)
         treelist = building.list_trees(["public", "internal", "images"])
         self._print(f"BlockTests.test_tree_list: treelist: {treelist}")

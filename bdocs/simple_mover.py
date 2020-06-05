@@ -1,5 +1,6 @@
 import abc
 from cdocs.contextual_docs import DocPath, FilePath
+from bdocs.building_metadata import BuildingMetadata
 from bdocs.bdocs_config import BdocsConfig
 from bdocs.mover import Mover, MoveDocException
 from cdocs.simple_pather import SimplePather
@@ -9,10 +10,12 @@ import shutil
 
 class SimpleMover(Mover):
 
-    def __init__(self, cfg:BdocsConfig, root_path:FilePath):
-        self._config = cfg
-        self._root_path = root_path
-        self._pather = SimplePather(root_path, cfg.get_config_path()) if cfg.pather is None else cfg.pather
+    def __init__(self, metadata:BuildingMetadata, bdocs):
+        self._metadata = metadata
+        self._bdocs = bdocs
+        self._config = metadata.config
+        self._root_path = bdocs.get_doc_root()
+        self._pather = bdocs.pather
 
 
     def move_doc(self, fromdoc:DocPath, todoc:DocPath) -> None:

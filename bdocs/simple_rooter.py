@@ -1,12 +1,13 @@
 import abc
 from cdocs.contextual_docs import FilePath
-from cdocs.config import Config
+from bdocs.building_metadata import BuildingMetadata
 from bdocs.rooter import Rooter
 import logging
 
 class SimpleRooter(Rooter):
 
-    def __init__(self, bdocs):
+    def __init__(self, metadata:BuildingMetadata, bdocs):
+        self._metadata = metadata
         self._bdocs = bdocs
 
     def init_root(self) -> None:

@@ -5,13 +5,15 @@ import logging
 from cdocs.contextual_docs import FilePath
 from bdocs.zipper import Zipper
 from bdocs.simple_rotater import SimpleRotater
+from bdocs.building_metadata import BuildingMetadata
 from bdocs.bdocs_config import BdocsConfig
 from zipfile import ZipFile
 
 class SimpleZipper(Zipper):
 
-    def __init__(self, config:BdocsConfig):
-        self._config = config
+    def __init__(self, metadata:BuildingMetadata, bdocs):
+        self._metadata = metadata
+        self._bdocs = bdocs
 
     def zip(self, filepath:FilePath) -> FilePath:
         auuid =  uuid4()
@@ -23,7 +25,7 @@ class SimpleZipper(Zipper):
         if not os.path.exists(zipfile):
             raise Exception(f"no file at {zipfile}")
         zipfilename = zipfile[zipfile.rindex(os.sep)+1:]
-        tmpdir = self._config.get("locations", "temp_dir")
+        tmpdir = self._metadata.config.get("locations", "temp_dir")
         unzipdirname = self._tempname()
         tempzipdir = tmpdir + os.sep + unzipdirname
         os.mkdir(tempzipdir)
@@ -40,12 +42,12 @@ class SimpleZipper(Zipper):
         shutil.rmtree(tempzipdir)
 
     def add_root_dir(self, newrootname:str, whereitisnow:FilePath) -> None:
-        docsdir = self._config.get("locations", "docs_dir")
+        docsdir = self._metadata.config.get("locations", "docs_dir")
         whereitsgoing = docsdir + os.sep + newrootname
         if os.path.exists(whereitsgoing):
             self.move_root(whereitsgoing)
         os.rename( whereitisnow, whereitsgoing )
-        self._config.add_to_config("docs", newrootname, whereitsgoing)
+        self._metadata.config.add_to_config("docs", newrootname, whereitsgoing)
 
     def move_root(self, path:FilePath) -> FilePath:
         return SimpleRotater().rotate(path)
