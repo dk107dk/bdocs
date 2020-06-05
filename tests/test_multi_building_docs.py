@@ -4,6 +4,13 @@ from bdocs.multi_building_docs import MultiBuildingDocs
 from bdocs.block import Block
 from cdocs.contextual_docs import FilePath, DocPath, Doc, JsonDict
 from cdocs.context import ContextMetadata
+from bdocs.bdocs_config import BdocsConfig
+from bdocs.building_metadata import BuildingMetadata
+import shutil
+import os
+
+BASE:FilePath = "/Users/davidkershaw/dev/bdocs"
+PATH:FilePath = BASE + "/docs/example"
 
 class BlockTests(unittest.TestCase):
 
@@ -11,6 +18,18 @@ class BlockTests(unittest.TestCase):
     def _print(self, text:str) -> None:
         if self.noise:
             print(text)
+
+    def test_unzip_doc_tree(self):
+        config = BdocsConfig()
+        metadata = BuildingMetadata(config)
+        building = Block(metadata)
+        shutil.copyfile(BASE+"/tests/resources/test.zip", BASE+"/tests/resources/____.zip" )
+        building.unzip_doc_tree( BASE+"/tests/resources/____.zip" )
+        b = os.path.exists( BASE + "/docs/test")
+        self.assertEqual(b, True, msg=f'{BASE + "/docs/test"} must exist')
+        if b:
+            shutil.rmtree(BASE + "/docs/test")
+            config.remove_from_config("docs", "test")
 
     def test_join(self):
         self._print(f"BlockTests.test_join")

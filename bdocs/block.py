@@ -10,6 +10,7 @@ from cdocs.cdocs import Cdocs,BadDocPath
 from bdocs.zipper import Zipper
 from bdocs.simple_zipper import SimpleZipper
 import logging
+import os
 
 class Block(MultiBuildingDocs):
 

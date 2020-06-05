@@ -50,7 +50,7 @@ class SimpleZipper(Zipper):
         self._metadata.config.add_to_config("docs", newrootname, whereitsgoing)
 
     def move_root(self, path:FilePath) -> FilePath:
-        return SimpleRotater().rotate(path)
+        return SimpleRotater(self._metadata, self._bdocs).rotate(path)
 
     def _tempname(self) -> str:
         return str(uuid4()).replace('-', '_')

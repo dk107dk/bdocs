@@ -132,17 +132,6 @@ class BdocsTests(unittest.TestCase):
         self.assertIn( 'assignee', tree, msg=f'tree must include "assignee"' )
         self.assertEqual( len(tree), 3, msg=f'tree must have three keys: {tree}')
 
-    def test_unzip_doc_tree(self):
-        metadata = BuildingMetadata()
-        bdocs = Bdocs(PATH, metadata)
-        shutil.copyfile(BASE+"/tests/resources/test.zip", BASE+"/tests/resources/____.zip" )
-        bdocs.unzip_doc_tree( BASE+"/tests/resources/____.zip" )
-        b = os.path.exists( BASE + "/docs/test")
-        self.assertEqual(b, True, msg=f'{BASE + "/docs/test"} must exist')
-        if b:
-            shutil.rmtree(BASE + "/docs/test")
-            bdocs.config.remove_from_config("docs", "test")
-
     def test_get_docs_with_titles(self):
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH, metadata)
