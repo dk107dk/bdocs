@@ -3,7 +3,7 @@ import unittest
 
 class TreeUtilTests(unittest.TestCase):
 
-    noise = True
+    noise = False
     def _print(self, text:str) -> None:
         if self.noise:
             print(text)

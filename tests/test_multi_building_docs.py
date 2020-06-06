@@ -14,7 +14,7 @@ PATH:FilePath = BASE + "/docs/example"
 
 class BlockTests(unittest.TestCase):
 
-    noise = True
+    noise = False
     def _print(self, text:str) -> None:
         if self.noise:
             print(text)

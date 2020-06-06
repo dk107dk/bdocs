@@ -10,9 +10,10 @@ class GitRooter(Rooter):
         self._bdocs = bdocs
 
     def init_root(self) -> None:
-        logging.warning("GitRooter.init_root: I don't do anything yet")
+        logging.info(f"GitRooter.init_root: {self._bdocs.docs_root}")
         repo = Repo.init(self._bdocs.docs_root)
 
     def delete_root(self) -> None:
+        logging.info(f"GitRooter.delete_root: {self._bdocs.docs_root}")
         shutil.rmtree(self._bdocs.docs_root)
 

@@ -10,8 +10,8 @@ from bdocs.user import User
 
 class BuildingMetadata(ContextMetadata):
 
-    def __init(self, config:Optional[Config]=None, user:Optional[User]=None) -> None:
-        super(config)
+    def __init__(self, config:Optional[Config]=None, user:Optional[User]=None) -> None:
+        super().__init__(config)
         self._user = user
 
     @property
