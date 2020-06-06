@@ -2,9 +2,11 @@ from bdocs.git.git_rooter import GitRooter
 from bdocs.git.git_writer import GitWriter
 from bdocs.building_metadata import BuildingMetadata
 from bdocs.bdocs import Bdocs
+from bdocs.git.git_util import GitUtil
 from cdocs.cdocs import Cdocs
 import os
 import unittest
+#from dulwich import porcelain
 
 PATH = "/Users/davidkershaw/dev/bdocs/docs"
 ROOTNAME = "git_test"
@@ -47,6 +49,44 @@ class GitTests(unittest.TestCase):
             bdocs.init_root()
         doctext = "adding to git"
         bdocs.put_doc("/app/git_test", doctext )
+        cdocs = Cdocs(PATH + "/git")
+        doc = cdocs.get_doc("/app/git_test")
+        self.assertEqual(doctext, doc, msg=f"{doc} must equal {doctext}")
+        bdocs.delete_doc("/app/git_test")
+        doc = cdocs.get_doc("/app/git_test")
+        self.assertIsNone(doc, msg=f"{doc} must be none")
+        if True:
+            bdocs.delete_root()
+            exist = os.path.exists( bdocs.docs_root)
+            self.assertEqual(exist, False, msg=f"new root at {bdocs.docs_root} must no longer exist")
+
+    def test_put_put(self):
+        self._print(f"GitTests.test_put_put")
+        metadata = BuildingMetadata()
+        bdocs = Bdocs(PATH + "/git", metadata)
+        git_rooter = GitRooter(metadata, bdocs)
+        git_writer = GitWriter(metadata, bdocs)
+        bdocs.rooter = git_rooter
+        bdocs.writer = git_writer
+        if not os.path.exists(bdocs.docs_root):
+            os.mkdir(bdocs.docs_root)
+            bdocs.init_root()
+        doctext = "adding to git"
+        bdocs.put_doc("/app/git_test", doctext )
+        #
+        # make a second write
+        #
+        doctext2 = "adding to git"
+        bdocs.put_doc("/app/git_test", doctext2 )
+
+        util = GitUtil(metadata, bdocs)
+        contents = util.get_log([b'app/git_test.xml'])
+        print(f"!!!!!! {contents}")
+        util.get_log_entries()
+
+        #
+        # check version
+        #
         cdocs = Cdocs(PATH + "/git")
         doc = cdocs.get_doc("/app/git_test")
         self.assertEqual(doctext, doc, msg=f"{doc} must equal {doctext}")

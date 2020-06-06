@@ -7,6 +7,7 @@ from bdocs.writer import Writer
 from dulwich.repo import Repo
 import logging
 from typing import Union
+import traceback
 
 class GitWriter(Writer):
 
@@ -18,21 +19,20 @@ class GitWriter(Writer):
     def write(self, filepath:FilePath, content:Union[bytes, Doc]) -> None:
         self._writer.write(filepath, content)
         try:
-            repo = Repo.init(self._bdocs.docs_root)
+            repo = Repo(self._bdocs.docs_root)
             repopath = filepath[len(self._bdocs.docs_root)+1:]
             logging.warning(f"GitWriter.write: repopath: {repopath}")
-            print(f"gitwriter: before stage")
             repo.stage([repopath])
-            print(f"gitwriter: after stage")
             user = self._metadata.user
             if user is None:
                 user = SimpleUser("anonymous")
             print(f"gitwriter: doing user commit")
             commit_id = repo.do_commit(b"gitwriter autocommit")  #, committer=b"test")
-            print(f"gitwriter: after commit")
+            print(f"gitwriter: after commit: commit_id: {commit_id}")
 
         except Exception as e:
             logging.error(f'GitWriter.write: cannot stage and/or commit: {e}, {type(e)}')
+            traceback.print_exc()
             return None
 
 
