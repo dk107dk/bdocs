@@ -19,6 +19,9 @@ class GitWriter(Writer):
     def write(self, filepath:FilePath, content:Union[bytes, Doc]) -> None:
         # write file to disk
         self._writer.write(filepath, content)
+        self.stage_and_commit(filepath)
+
+    def stage_and_commit(self, filepath:FilePath ) -> None:
         # stage and commit to git
         util = GitUtil(self._metadata, self._bdocs)
         with ( util.open(self._bdocs.docs_root) ) as repo:

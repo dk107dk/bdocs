@@ -40,9 +40,12 @@ class GitUtil:
 
     def get_log_entries(self, max_entries=None, paths:Optional[List[str]]=None ) -> List[WalkEntry]:
         path = self._bdocs.get_doc_root()
+        entries = []
         with self.open(path) as r:
             walker = r.get_walker(max_entries=max_entries, paths=paths, reverse=False)
-            return walker
+            for entry in walker:
+                entries.append(entry)
+            return entries
 
     def list_tree(self, store, treeid, base) -> Dict[str,Tuple]:
         entries = {}

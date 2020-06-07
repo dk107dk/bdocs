@@ -20,9 +20,9 @@ class GitDeleter(Deleter):
     def delete(self, filepath:FilePath) -> None:
         util = GitUtil(self._metadata, self._bdocs)
         path = util.repo_path_for_file(filepath)
-        print(f"GitDeleter.delete: docroot: {self._bdocs.get_doc_root()}")
-        print(f"GitDeleter.delete: filepath: {filepath} ")
-        print(f"GitDeleter.delete: path to delete: {path}")
+        logging.info(f"GitDeleter.delete: docroot: {self._bdocs.get_doc_root()}")
+        logging.info(f"GitDeleter.delete: filepath: {filepath} ")
+        logging.info(f"GitDeleter.delete: path to delete: {path}")
         try:
             docroot = self._bdocs.get_doc_root()
             #
