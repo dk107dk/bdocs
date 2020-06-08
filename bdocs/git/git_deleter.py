@@ -27,7 +27,7 @@ class GitDeleter(Deleter):
             docroot = self._bdocs.get_doc_root()
             #
             # setting the prefix is whacky. not sure why it is needed.
-            # it does: "docs/git/" + path. which works for porcelain.rm.
+            # this does: "docs/git/" + path. which works for porcelain.rm.
             #
             p, prefix = os.path.split(docroot)
             p, pp = os.path.split(p)

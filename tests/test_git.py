@@ -127,6 +127,7 @@ class GitTests(unittest.TestCase):
 
     def test_delete(self):
         self._print(f"GitTests.test_delete")
+        if self._off(): return
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH + "/git", metadata)
         git_rooter = GitRooter(metadata, bdocs)
@@ -173,6 +174,7 @@ class GitTests(unittest.TestCase):
 
     def test_move(self):
         self._print(f"GitTests.test_move")
+        if self._off(): return
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH + "/git", metadata)
         git_rooter = GitRooter(metadata, bdocs)
@@ -228,6 +230,7 @@ class GitTests(unittest.TestCase):
 
     def test_copy(self):
         self._print(f"GitTests.test_copy")
+        if self._off(): return
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH + "/git", metadata)
         git_rooter = GitRooter(metadata, bdocs)
@@ -280,6 +283,126 @@ class GitTests(unittest.TestCase):
             bdocs.delete_root()
             exist = os.path.exists( bdocs.docs_root)
             self.assertEqual(exist, False, msg=f"new root at {bdocs.docs_root} must no longer exist")
+
+    def test_tag(self):
+        self._print(f"GitTests.test_tag")
+        #if self._off(): return
+        metadata = BuildingMetadata()
+        cdocs = Cdocs(PATH + "/git")
+        bdocs = Bdocs(PATH + "/git", metadata)
+        git_rooter = GitRooter(metadata, bdocs)
+        git_writer = GitWriter(metadata, bdocs)
+        bdocs.rooter = git_rooter
+        bdocs.writer = git_writer
+        if not os.path.exists(bdocs.docs_root):
+            os.mkdir(bdocs.docs_root)
+            bdocs.init_root()
+        #
+        # first write
+        #
+        doctext = "adding 1 to git"
+        bdocs.put_doc("/app/git_test", doctext )
+        doc = cdocs.get_doc("/app/git_test")
+        self.assertEqual(doctext, doc, msg=f"{doc} must equal {doctext}")
+        doctext11 = "adding 1.1 to git"
+        bdocs.put_doc("/app/git_stuff", doctext11 )
+        doc = cdocs.get_doc("/app/git_stuff")
+        self.assertEqual(doctext11, doc, msg=f"{doc} must equal {doctext11}")
+        #
+        # write. sleep to help make the walker entries more clear.
+        #
+        self._print(f"GitTests.test_tag ....sleeping....\n")
+        time.sleep(.5)
+        #
+        # second write
+        #
+        doctext2 = "adding 2 to git"
+        bdocs.put_doc("/app/git_test", doctext2 )
+        doc = cdocs.get_doc("/app/git_test")
+        self.assertEqual(doctext2, doc, msg=f"{doc} must equal {doctext2}")
+        self._print(f"GitTests.test_tag ....sleeping....\n")
+        #
+        # create the tag
+        #
+        util = GitUtil(metadata, bdocs)
+        entries = util.get_log_entries(paths=[b'app/git_test.xml'])
+        self._print(f"GitTests.test_tag: entries: {entries}")
+        util.tag(b"v0.0.10", b"first!")
+        tags = util.get_tags()
+        self._print(f"GitTests.test_tag: 1st tags: {tags}")
+        time.sleep(.5)
+        #
+        # third write
+        #
+        doctext3 = "adding 3 to git"
+        bdocs.put_doc("/app/git_test", doctext3 )
+        doc = cdocs.get_doc("/app/git_test")
+        self.assertEqual(doctext3, doc, msg=f"{doc} must equal {doctext3}")
+        util.tag(b"v0.0.01", b"second!")
+        tags = util.get_tags()
+        self._print(f"GitTests.test_tag: 2rd tags: {tags}")
+        time.sleep(.5)
+        #
+        # fourth write
+        #
+        doctext4 = "adding 4 to git"
+        bdocs.put_doc("/app/git_test", doctext4 )
+        doc = cdocs.get_doc("/app/git_test")
+        self.assertEqual(doctext4, doc, msg=f"{doc} must equal {doctext4}")
+
+        doctext41 = "adding 4.1 to git"
+        bdocs.put_doc("/app/git_check", doctext41 )
+        doc = cdocs.get_doc("/app/git_check")
+        self.assertEqual(doctext41, doc, msg=f"{doc} must equal {doctext41}")
+
+        util.tag(b"v0.0.05", b"third!")
+        tags = util.get_tags()
+        self._print(f"GitTests.test_tag: 3rd tags: {tags}")
+        #
+        # switch between different tags
+        #
+        util.disconnect_to_tag(b'v0.0.01')
+        doc = cdocs.get_doc("/app/git_test")
+        self.assertEqual(doctext3, doc, msg=f"{doc} must equal {doctext3}")
+        util.disconnect_to_tag(b'v0.0.10')
+        doc = cdocs.get_doc("/app/git_test")
+        self.assertEqual(doctext2, doc, msg=f"{doc} must equal {doctext2}")
+        #
+        #
+        #
+        """
+content: {'0:app/git_check.xml': b'adding 4.1 to git'}
+content: {'0:app/git_test.xml': b'adding 4 to git', '1:app/git_test.xml': b'adding 2 to git'}
+        """
+        changes = util.get_changes(b'v0.0.05',b'v0.0.10')
+        """
+((b'app/git_check.xml', None),
+(33188, None),
+(b'6d25dc181620903b3d57ea68920755f71e7e599b', None))
+
+((b'app/git_test.xml', b'app/git_test.xml'),
+(33188, 33188),
+(b'b3f64adb520376cc098e54fe3f0d43d767e698a0', b'50c2ff52cf23ac3dcc4addff80ab80b9179d74cc'))
+        """
+        #print(f"GitTests.test_tag: the changes: {changes}")
+        for change in changes:
+            #print(f"GitTests.test_tag: a change: {change}")
+            content = util.get_content_for_change(change)
+            print(f"GitTests.test_tag: ...... content: {content}\n")
+        #print(f"GitTests.test_tag: done iterating the changes\n")
+        #
+        # other docs present?
+        #
+        doc = cdocs.get_doc("/app/git_stuff")
+        self.assertEqual(doctext11, doc, msg=f"{doc} must equal {doctext11}")
+        doc = cdocs.get_doc("/app/git_check")
+        self.assertIsNone(doctext41, msg=f"{doc} must be None, not {doctext41}")
+
+        if True:
+            bdocs.delete_root()
+            exist = os.path.exists( bdocs.docs_root)
+            self.assertEqual(exist, False, msg=f"new root at {bdocs.docs_root} must no longer exist")
+
 
 
 

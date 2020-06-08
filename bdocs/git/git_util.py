@@ -1,9 +1,10 @@
 from cdocs.contextual_docs import FilePath
 from bdocs.building_metadata import BuildingMetadata
+from bdocs.user import User
 from dulwich import porcelain
 from dulwich.repo import Repo
 from dulwich.walk import WalkEntry
-from dulwich.objects import Blob
+from dulwich.objects import Blob, Commit
 import logging
 import io
 from typing import Optional, List, Dict, Tuple
@@ -14,7 +15,13 @@ from contextlib import (
 import posixpath
 import stat
 
+
+class GitError(Exception):
+    pass
+
 class GitUtil:
+    BLOG_MODE = 33188 # not sure exactly what this is yet, but it is returned by get_changes
+                      # it is not the object type
 
     def __init__(self, metadata:BuildingMetadata, bdocs):
         self._metadata = metadata
@@ -71,4 +78,90 @@ class GitUtil:
                         logging.warning("{change.new.path} is not a blob. this may be a problem.")
             return content
 
+    def tag(self, tag_name:bytes, message:bytes, user:Optional[User]=None) -> None:
+        if tag_name is None:
+            raise GitError("tag_name cannot be None")
+        if message is None:
+            raise GitError("message cannot be None")
+        with self.open(self._bdocs.get_doc_root()) as repo:
+            author = user.username if user is not None else None
+            porcelain.tag_create(repo, tag_name, author=author, message=message, annotated=True)
+
+    def get_tags(self) -> Dict[bytes,bytes]:
+        with self.open(self._bdocs.get_doc_root()) as repo:
+            tags = repo.refs.as_dict(b"refs/tags")
+            for k,v in tags.items():
+                tag = repo[v]
+                logging.info(f"GitUtil: get_tags: {k}->tag[{v}]: {tag}")
+            return tags
+
+    def disconnect_to_tag(self, tag_name:bytes) -> None:
+        with self.open(self._bdocs.get_doc_root()) as repo:
+            the_name = b"refs/tags/" + tag_name
+            tag = repo[the_name]
+            logging.info(f"util: ... type(tag): {type(tag)}")
+            ptr = tag._get_object()
+            logging.info(f"util: ... type(ptr): {type(ptr)}: {len(ptr)}: {ptr}")
+            commitsha = ptr[1]
+            logging.info(f"util: ... type(commitsha): {type(commitsha)}: {commitsha}")
+            object_store = repo.object_store
+            commit = object_store.__getitem__(commitsha)
+            logging.info(f"util: ... type(commit2): {type(commit)}: {commit}")
+            treesha = commit._tree
+            logging.info(f"util: ... type(treesha): {type(treesha)}: {treesha}")
+            repo.reset_index(treesha)
+
+    def get_changes(self, the_tag:bytes, other_tag:bytes) -> Tuple[Tuple]:
+        """ returns (path, mode, objectsha) """
+        logging.info(f"GitUtil.changes: the tag: {the_tag}, other tag: {other_tag}")
+        with self.open(self._bdocs.get_doc_root()) as repo:
+            object_store = repo.object_store
+            the_name = b"refs/tags/" + the_tag
+            the_tag = repo[the_name]
+            logging.info(f"GitUtil.changes: the tag: {the_tag}")
+            the_ptr = the_tag._get_object()
+            the_commitsha = the_ptr[1]
+            the_commit = object_store.__getitem__(the_commitsha)
+            logging.info(f"GitUtil.changes: the commit: {the_commit}")
+            the_treesha = the_commit._tree
+            logging.info(f"GitUtil.changes: the treesha: {the_treesha}")
+
+            other_name = b"refs/tags/" + other_tag
+            other_tag = repo[other_name]
+            logging.info(f"GitUtil.changes: other tag: {other_tag}")
+            other_ptr = other_tag._get_object()
+            other_commitsha = other_ptr[1]
+            other_commit = object_store.__getitem__(other_commitsha)
+            logging.info(f"GitUtil.changes: other commit: {other_commit}")
+            other_treesha = other_commit._tree
+            logging.info(f"GitUtil.changes: other treesha: {other_treesha}")
+
+            results = []
+            changes = object_store.tree_changes(the_treesha, other_treesha)
+            logging.info(f"GitUtil.changes: changes: {changes}")
+            for change in changes:
+                logging.info(f"GitUtil.changes: a change: {change}")
+                results.append(change)
+            return results
+
+    def get_content_for_change(self, change):
+        with self.open(self._bdocs.get_doc_root()) as repo:
+            object_store = repo.object_store
+            content = {}
+            i = 0
+            for sha in change[2]:
+                if sha is not None:
+                    logging.info(f"GitUtil.get_content_for_change: the sha is: {sha}")
+                    o = object_store[sha]
+                    if isinstance( o, Blob ):
+                        logging.info(f"GitUtil.get_content_for_change: this is a blob!: {type(o)}")
+                        content[f"{i}:{change[0][i].decode('utf-8')}"] = o.data
+                        logging.info(f"GitUtil.get_content_for_change: content: {content}")
+                    else:
+                        logging.info(f"GitUtil.get_content_for_change: not a blob!: {type(o)}")
+                        content[f"{i}:{change[0][i].decode('utf-8')}"] = None
+                        logging.warning("change[2].{sha} is not a blob. this may be a problem.")
+                        logging.info(f"GitUtil.get_content_for_change: content: {content}")
+                i = i+1
+            return content
 
