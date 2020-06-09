@@ -370,33 +370,25 @@ class GitTests(unittest.TestCase):
         #
         #
         #
-        """
-content: {'0:app/git_check.xml': b'adding 4.1 to git'}
-content: {'0:app/git_test.xml': b'adding 4 to git', '1:app/git_test.xml': b'adding 2 to git'}
-        """
         changes = util.get_changes(b'v0.0.05',b'v0.0.10')
-        """
-((b'app/git_check.xml', None),
-(33188, None),
-(b'6d25dc181620903b3d57ea68920755f71e7e599b', None))
-
-((b'app/git_test.xml', b'app/git_test.xml'),
-(33188, 33188),
-(b'b3f64adb520376cc098e54fe3f0d43d767e698a0', b'50c2ff52cf23ac3dcc4addff80ab80b9179d74cc'))
-        """
-        #print(f"GitTests.test_tag: the changes: {changes}")
+        print(f"GitTests.test_tag: the changes: {changes}")
         for change in changes:
-            #print(f"GitTests.test_tag: a change: {change}")
             content = util.get_content_for_change(change)
-            print(f"GitTests.test_tag: ...... content: {content}\n")
-        #print(f"GitTests.test_tag: done iterating the changes\n")
+            for k,v in content.items():
+                util.sync_file_system(v, True)
+        #
+        # must have gone back to 2
+        #
+        doc = cdocs.get_doc("/app/git_test")
+        self.assertEqual(doctext2, doc, msg=f"{doc} must equal {doctext11}")
         #
         # other docs present?
+        # we want stuff but not check
         #
         doc = cdocs.get_doc("/app/git_stuff")
         self.assertEqual(doctext11, doc, msg=f"{doc} must equal {doctext11}")
         doc = cdocs.get_doc("/app/git_check")
-        self.assertIsNone(doctext41, msg=f"{doc} must be None, not {doctext41}")
+        self.assertIsNone(doc, msg=f"{doc} must be None, not {doc}")
 
         if True:
             bdocs.delete_root()

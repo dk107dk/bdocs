@@ -7,6 +7,7 @@ from dulwich.walk import WalkEntry
 from dulwich.objects import Blob, Commit
 import logging
 import io
+import os
 from typing import Optional, List, Dict, Tuple
 from contextlib import (
     closing,
@@ -14,6 +15,63 @@ from contextlib import (
 )
 import posixpath
 import stat
+
+class ContentChange:
+
+    def __init__(self, tofile:bytes, tocontent:bytes ) -> None:
+        self._to_file = tofile
+        self._to_content = tocontent
+        self._from_file = None
+        self._from_content = None
+
+    def __str__(self):
+        return f"to: {self._to_file}, \n"+\
+               f"to bytes: {self._to_content}, \n"+\
+               f"from: {self._from_file}, \n"+\
+               f"from bytes: {self._from_content}"
+
+    @property
+    def to_file(self):
+        return self._to_file
+
+    @to_file.setter
+    def to_file(self, name):
+        self._to_file = name
+
+    @property
+    def from_file(self):
+        return self._from_file
+
+    @from_file.setter
+    def from_file(self, name):
+        self._from_file = name
+
+    @property
+    def to_file_str(self):
+        if self._to_file is None: return None
+        return self._to_file.decode('utf-8')
+
+    @property
+    def from_file_str(self):
+        if self._from_file is None: return None
+        return self._from_file.decode('utf-8')
+
+    @property
+    def to_content(self):
+        return self._to_content
+
+    @to_content.setter
+    def to_content(self, stuff):
+        self._to_content = stuff
+
+    @property
+    def from_content(self):
+        return self._from_content
+
+    @from_content.setter
+    def from_content(self, stuff):
+        self._from_content = stuff
+
 
 
 class GitError(Exception):
@@ -144,7 +202,7 @@ class GitUtil:
                 results.append(change)
             return results
 
-    def get_content_for_change(self, change):
+    def get_content_for_change(self, change) -> Dict[bytes,ContentChange]:
         with self.open(self._bdocs.get_doc_root()) as repo:
             object_store = repo.object_store
             content = {}
@@ -153,15 +211,63 @@ class GitUtil:
                 if sha is not None:
                     logging.info(f"GitUtil.get_content_for_change: the sha is: {sha}")
                     o = object_store[sha]
+                    file = change[0][i]
+                    c = content.get(file)
+                    if c is None:
+                        c = ContentChange(file, o.data if isinstance( o, Blob ) else None)
+                        content[file] = c
+                    else:
+                        c.from_file = file
+                        c.from_content = o.data if isinstance( o, Blob ) else None
+
                     if isinstance( o, Blob ):
                         logging.info(f"GitUtil.get_content_for_change: this is a blob!: {type(o)}")
-                        content[f"{i}:{change[0][i].decode('utf-8')}"] = o.data
                         logging.info(f"GitUtil.get_content_for_change: content: {content}")
                     else:
                         logging.info(f"GitUtil.get_content_for_change: not a blob!: {type(o)}")
-                        content[f"{i}:{change[0][i].decode('utf-8')}"] = None
+                        #content[f"{i}:{change[0][i].decode('utf-8')}"] = None
                         logging.warning("change[2].{sha} is not a blob. this may be a problem.")
                         logging.info(f"GitUtil.get_content_for_change: content: {content}")
                 i = i+1
             return content
+
+    def sync_file_system(self, c:ContentChange, revert:bool=True ) -> None:
+        print(f"\nGitUtil.sync_file_system: syncing: \n{c}")
+
+        writing = (not revert and c.to_content is not None) or \
+                  (revert and c.from_content is not None)
+        write = None
+        write_to = None
+        if writing:
+            if revert:
+                write = c.from_content
+                write_to = c.from_file_str
+            else:
+                write = c.to_content
+                write_to = c.to_file_str
+        deleting = not write
+        delete = None
+        if deleting:
+            if revert:
+                delete = c.to_file_str
+            else:
+                delete = c.from_file_str
+
+
+
+        print(f"GitUtil.sync_file_system: writing? to_file: {c.to_file}, revert: {revert}, from_file: {c.from_file}, writing: {writing}")
+        if writing:
+            # writing
+            path = os.path.join(self._bdocs.get_doc_root(), write_to )
+            print(f"GitUtil.sync_file_system: write path: {path}")
+            with open( path, 'wb') as file:
+                file.write(write)
+        else:
+            path = os.path.join(self._bdocs.get_doc_root(), delete)
+            try:
+                print(f"GitUtil.sync_file_system: delete path: {path}")
+                os.remove(path)
+            except FileNotFoundError as e:
+                logging.error(f'GitUtil.sync_file_system: cannot delete {c.from_file_str}: {e}')
+
 
