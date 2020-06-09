@@ -73,13 +73,10 @@ class ContentChange:
         self._from_content = stuff
 
 
-
 class GitError(Exception):
     pass
 
 class GitUtil:
-    BLOG_MODE = 33188 # not sure exactly what this is yet, but it is returned by get_changes
-                      # it is not the object type
 
     def __init__(self, metadata:BuildingMetadata, bdocs):
         self._metadata = metadata
@@ -153,6 +150,7 @@ class GitUtil:
                 logging.info(f"GitUtil: get_tags: {k}->tag[{v}]: {tag}")
             return tags
 
+    # is disconnect_to_tag the right name? it basically sets head to point to tag.
     def disconnect_to_tag(self, tag_name:bytes) -> None:
         with self.open(self._bdocs.get_doc_root()) as repo:
             the_name = b"refs/tags/" + tag_name
