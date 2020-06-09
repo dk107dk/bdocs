@@ -24,7 +24,7 @@ class GitTests(unittest.TestCase):
             print(text)
 
     def _off(self):
-        return True
+        return False
 
     def test_init(self):
         self._print(f"GitTests.test_init")
@@ -286,7 +286,7 @@ class GitTests(unittest.TestCase):
 
     def test_tag(self):
         self._print(f"GitTests.test_tag")
-        #if self._off(): return
+        if self._off(): return
         metadata = BuildingMetadata()
         cdocs = Cdocs(PATH + "/git")
         bdocs = Bdocs(PATH + "/git", metadata)
@@ -368,7 +368,12 @@ class GitTests(unittest.TestCase):
         doc = cdocs.get_doc("/app/git_test")
         self.assertEqual(doctext2, doc, msg=f"{doc} must equal {doctext2}")
         #
+        # revert the filesystem git_test.xml should stay the same because it already
+        # was reverted by util.disconnect_to_tag. basically dulwich does the minimum
+        # sync to specifically what the tagged commit did, but doesn't sync other files
+        # involved in other commits
         #
+        # fix that by syncing change by change for all changes between tags
         #
         changes = util.get_changes(b'v0.0.05',b'v0.0.10')
         print(f"GitTests.test_tag: the changes: {changes}")

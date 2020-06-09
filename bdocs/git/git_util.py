@@ -222,17 +222,14 @@ class GitUtil:
 
                     if isinstance( o, Blob ):
                         logging.info(f"GitUtil.get_content_for_change: this is a blob!: {type(o)}")
-                        logging.info(f"GitUtil.get_content_for_change: content: {content}")
                     else:
                         logging.info(f"GitUtil.get_content_for_change: not a blob!: {type(o)}")
-                        #content[f"{i}:{change[0][i].decode('utf-8')}"] = None
-                        logging.warning("change[2].{sha} is not a blob. this may be a problem.")
-                        logging.info(f"GitUtil.get_content_for_change: content: {content}")
+                    logging.info(f"GitUtil.get_content_for_change: content: {content}")
                 i = i+1
             return content
 
     def sync_file_system(self, c:ContentChange, revert:bool=True ) -> None:
-        print(f"\nGitUtil.sync_file_system: syncing: \n{c}")
+        logging.info(f"GitUtil.sync_file_system: syncing: {c}")
 
         writing = (not revert and c.to_content is not None) or \
                   (revert and c.from_content is not None)
@@ -253,19 +250,16 @@ class GitUtil:
             else:
                 delete = c.from_file_str
 
-
-
-        print(f"GitUtil.sync_file_system: writing? to_file: {c.to_file}, revert: {revert}, from_file: {c.from_file}, writing: {writing}")
+        logging.info(f"GitUtil.sync_file_system: writing? to_file: {c.to_file}, revert: {revert}, from_file: {c.from_file}, writing: {writing}")
         if writing:
-            # writing
             path = os.path.join(self._bdocs.get_doc_root(), write_to )
-            print(f"GitUtil.sync_file_system: write path: {path}")
+            logging.info(f"GitUtil.sync_file_system: write path: {path}")
             with open( path, 'wb') as file:
                 file.write(write)
         else:
             path = os.path.join(self._bdocs.get_doc_root(), delete)
             try:
-                print(f"GitUtil.sync_file_system: delete path: {path}")
+                logging.info(f"GitUtil.sync_file_system: delete path: {path}")
                 os.remove(path)
             except FileNotFoundError as e:
                 logging.error(f'GitUtil.sync_file_system: cannot delete {c.from_file_str}: {e}')
