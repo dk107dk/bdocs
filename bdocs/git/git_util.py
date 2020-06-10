@@ -8,13 +8,14 @@ from dulwich.objects import Blob, Commit
 import logging
 import io
 import os
-from typing import Optional, List, Dict, Tuple
+from typing import Optional, List, Dict, Tuple, Any
 from contextlib import (
     closing,
     contextmanager,
 )
 import posixpath
 import stat
+from datetime import datetime
 
 class ContentChange:
 
@@ -147,8 +148,41 @@ class GitUtil:
             tags = repo.refs.as_dict(b"refs/tags")
             for k,v in tags.items():
                 tag = repo[v]
-                logging.info(f"GitUtil: get_tags: {k}->tag[{v}]: {tag}")
+                print(f"GitUtil.get_tags: {k}->tag[{v}]: {tag}")
+                print(f"GitUtil.get_tags: {tag._tag_time}")
+                print(f"GitUtil.get_tags: {tag._tagger}")
+                print(f"GitUtil.get_tags: {tag._message}")
             return tags
+
+    def get_tag_values(self) -> Dict[str,Dict[str,Any]]:
+        """ gets a dict of
+                {
+                    sha: dict{
+                          "name",
+                          "tagger",
+                          "message",
+                          "timestamp",
+                          "datetime",
+                          "object"
+                    }
+                }
+        """
+        with self.open(self._bdocs.get_doc_root()) as repo:
+            tags = repo.refs.as_dict(b"refs/tags")
+            result = {}
+            for k,v in tags.items():
+                tag = repo[v]
+                print(f"GitUtil.get_tags: {k}->tag[{v}]: {tag}")
+                atag = {}
+                result[v.decode("utf-8")] = atag
+                atag["name"] = tag._name
+                atag["tagger"] = tag._tagger
+                atag["message"] = tag._message
+                atag["timestamp"] = tag._tag_time
+                dt = datetime.fromtimestamp(tag._tag_time)
+                atag["datetime"] = dt
+                atag["object"] = tag
+            return result
 
     # is disconnect_to_tag the right name? it basically sets head to point to tag.
     def disconnect_to_tag(self, tag_name:bytes) -> None:

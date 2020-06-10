@@ -18,7 +18,7 @@ ROOT = PATH + "/" + ROOTNAME
 
 class GitTests(unittest.TestCase):
 
-    noise = False
+    noise = True
     def _print(self, text:str) -> None:
         if self.noise:
             print(text)
@@ -286,7 +286,7 @@ class GitTests(unittest.TestCase):
 
     def test_tag(self):
         self._print(f"GitTests.test_tag")
-        if self._off(): return
+        #if self._off(): return
         metadata = BuildingMetadata()
         cdocs = Cdocs(PATH + "/git")
         bdocs = Bdocs(PATH + "/git", metadata)
@@ -329,7 +329,10 @@ class GitTests(unittest.TestCase):
         self._print(f"GitTests.test_tag: entries: {entries}")
         util.tag(b"v0.0.10", b"first!")
         tags = util.get_tags()
-        self._print(f"GitTests.test_tag: 1st tags: {tags}")
+        self._print(f"\nGitTests.test_tag: 1st tags: {tags}\n\n")
+        tag_values = util.get_tag_values()
+        for k,v in tag_values.items():
+            print(f"    a tag: {k} = {v}\n")
         time.sleep(.5)
         #
         # third write
