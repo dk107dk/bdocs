@@ -3,3 +3,4 @@ cdocs==0.0.17
 pypinfo
 inflect
 dulwich
+Whoosh

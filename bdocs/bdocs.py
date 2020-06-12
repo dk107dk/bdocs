@@ -14,6 +14,10 @@ from bdocs.zipper import Zipper
 from bdocs.walker import Walker
 from cdocs.pather import Pather
 from bdocs.rooter import Rooter
+from bdocs.searcher import Searcher
+from bdocs.indexer import Indexer
+from bdocs.simple_null_searcher import SimpleNullSearcher
+from bdocs.simple_null_indexer import SimpleNullIndexer
 from bdocs.mover import Mover
 from bdocs.deleter import Deleter
 from bdocs.rotater import Rotater
@@ -44,22 +48,25 @@ class Bdocs(BuildingDocs):
             self._config = metadata.config
         self._writer = None
         self._walker = None
-
         self._deleter = None
         self._zipper = None
         self._rotater = None
         self._rooter = None
         self._mover = None
         self._pather = None
+        self._indexer = None
+        self._searcher = None
 
-        self._use_writer = SimpleWriter#()
-        self._use_walker = SimpleWalker#()
-        self._use_deleter = SimpleDeleter#()
-        self._use_zipper = SimpleZipper#(cfg)
-        self._use_rotater = SimpleRotater#()
-        self._use_rooter = SimpleRooter#(self)
-        self._use_mover = SimpleMover#(cfg, doc_root)
-        self._use_pather = SimplePather#(self._docs_root, cfg.get_config_path()) if cfg.pather is None else cfg.pather
+        self._use_writer = SimpleWriter
+        self._use_walker = SimpleWalker
+        self._use_deleter = SimpleDeleter
+        self._use_zipper = SimpleZipper
+        self._use_rotater = SimpleRotater
+        self._use_rooter = SimpleRooter
+        self._use_mover = SimpleMover
+        self._use_pather = SimplePather
+        self._use_searcher = SimpleNullSearcher
+        self._use_indexer = SimpleNullIndexer
 
     @property
     def root_name(self):
@@ -166,6 +173,26 @@ class Bdocs(BuildingDocs):
     def pather(self, pather:Pather) -> None:
         self._pather = pather
 
+    @property
+    def searcher(self) -> Searcher:
+        if self._searcher is None:
+            self._searcher = self._use_searcher(self.metadata, self)
+        return self._searcher
+
+    @searcher.setter
+    def searcher(self, searcher:Searcher) -> None:
+        self._searcher = searcher
+
+    @property
+    def indexer(self) -> Indexer:
+        if self._indexer is None:
+            self._indexer = self._use_indexer(self.metadata, self)
+        return self._indexer
+
+    @indexer.setter
+    def indexer(self, indexer:Indexer) -> None:
+        self._indexer = indexer
+
 # ------------------
 
     def init_root(self):
@@ -187,6 +214,8 @@ class Bdocs(BuildingDocs):
             bs = doc.encode()
         logging.info(f"Bdocs.put_doc: path: {path}, filepath: {filepath} ")
         self.writer.write(filepath, bs)
+        self.indexer.index_doc(path, doc)
+
 
     def move_doc(self, fromdoc:DocPath, todoc:DocPath) -> None:
         self.mover.move_doc(fromdoc,todoc)

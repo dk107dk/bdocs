@@ -18,13 +18,13 @@ ROOT = PATH + "/" + ROOTNAME
 
 class GitTests(unittest.TestCase):
 
-    noise = True
+    noise = False
     def _print(self, text:str) -> None:
         if self.noise:
             print(text)
 
     def _off(self):
-        return False
+        return True
 
     def test_init(self):
         self._print(f"GitTests.test_init")
@@ -286,7 +286,7 @@ class GitTests(unittest.TestCase):
 
     def test_tag(self):
         self._print(f"GitTests.test_tag")
-        #if self._off(): return
+        if self._off(): return
         metadata = BuildingMetadata()
         cdocs = Cdocs(PATH + "/git")
         bdocs = Bdocs(PATH + "/git", metadata)

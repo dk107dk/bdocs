@@ -2,6 +2,15 @@ from cdocs.contextual_docs import DocPath
 from typing import List
 
 class SearchOptions(object):
+    """
+    CURRENTLY NOT USED: this class is intended to help find
+    docs relative to docpaths. so for e.g. it might help say
+    that whatever search walk will take place should look only
+    from the starting point up, ignoring any matches that
+    might be below the starting point.
+
+    if this becomes a helpful class please indicate that here!
+    """
 
     def __init__(self):
         self._lookdown = True

@@ -10,6 +10,9 @@ class Rooter(metaclass=abc.ABCMeta):
     def init_root(self, rootname) -> FilePath:
         pass
 
+    @abc.abstractmethod
+    def delete_root(self) -> None:
+        pass
 
 
 

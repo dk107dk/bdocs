@@ -3,6 +3,7 @@ from cdocs.contextual_docs import FilePath
 from bdocs.building_metadata import BuildingMetadata
 from bdocs.rooter import Rooter
 import logging
+import shutil
 
 class SimpleRooter(Rooter):
 
@@ -11,9 +12,9 @@ class SimpleRooter(Rooter):
         self._bdocs = bdocs
 
     def init_root(self) -> None:
-        logger.warning("SimpleRooter.init_root: I don't do anything yet")
+        logging.warning("SimpleRooter.init_root: I don't do anything yet")
         pass
 
     def delete_root(self) -> None:
-        pass
+        shutil.rmtree(self._bdocs.get_doc_root())
 
