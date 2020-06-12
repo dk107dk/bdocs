@@ -1,0 +1,13 @@
+
+
+Things you can do with SeeDocs:
+    > contextual help
+    > updateable mouse-overs
+    > i18n
+    > externalize strings
+    > post messages to web app users
+
+With more work on your part:
+    > create a docs tree (a wiki-like book-form docs)
+    > create onboarding tours
+
