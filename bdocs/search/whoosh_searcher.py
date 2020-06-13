@@ -1,11 +1,11 @@
 from cdocs.contextual_docs import JsonDict, DocPath
 from bdocs.searcher import Searcher, Query
-from bdocs.indexer import Index
 from bdocs.search.whoosh_index import WhooshIndex
-from bdocs.search.whoosh_indexer import WhooshIndexer
+from bdocs.search.index_doc import IndexDoc
 from bdocs.building_metadata import BuildingMetadata
 from whoosh.qparser import QueryParser
-from typing import List
+from typing import List, Dict, Any
+import logging
 
 class WhooshSearcher(WhooshIndex, Searcher):
 
@@ -15,21 +15,29 @@ class WhooshSearcher(WhooshIndex, Searcher):
         self._bdocs = bdocs
         self._check_index()
 
-    def find_docs(self, query:Query) -> List[DocPath]:
+    def find_docs(self, query:Query, root_doc_paths:bool=False) -> List[DocPath]:
+        """ if root_doc_paths the results will be RootDocPath, rather than DocPath """
         with self._get_index().searcher() as searcher:
             q = QueryParser("content", self._schema).parse(query._query)
             results = searcher.search(q, terms=True)
-            for r in results:
-                print (r, r.score)
-                # Was this results object created with terms=True?
-                if results.has_matched_terms():
-                    # What terms matched in the results?
-                    print(results.matched_terms())
+            paths = []
             for hit in results:
-                print(hit.matched_terms())
-
-            return []
+                logging.info(f"WhooshSearcher.find_docs: hit: {type(hit)}, with score: {hit.score} and terms: {hit.matched_terms()}")
+                path = hit["path"]
+                if root_doc_paths:
+                    path = self._bdocs.root_name + ":" + path
+                paths.append(path)
+            return paths
 
     def find_docs_with_metadata(self, query:Query) -> List[JsonDict]:
-        pass
+        with self._get_index().searcher() as searcher:
+            q = QueryParser("content", self._schema).parse(query._query)
+            results = searcher.search(q, terms=True)
+            docs:List[Dict[str,Any]] = []
+            for hit in results:
+                logging.info(f"WhooshSearcher.find_docs_with_metadata: hit: {type(hit)}, with score: {hit.score} and terms: {hit.matched_terms()}")
+                m = hit.fields()
+                doc = IndexDoc(m)
+                docs.append(m)
+            return docs
 

@@ -5,6 +5,7 @@ from cdocs.cdocs import Cdocs
 from bdocs.search.whoosh_indexer import WhooshIndexer
 from bdocs.search.whoosh_searcher import WhooshSearcher
 from bdocs.searcher import Query
+from bdocs.search.index_doc import IndexDoc
 import os
 
 PATH = "/Users/davidkershaw/dev/bdocs/docs"
@@ -21,9 +22,29 @@ class SearchTests(unittest.TestCase):
     def _off(self):
         return False
 
+    def test_index_doc(self):
+        self._print(f"SearchTests.test_index_doc")
+        #if self._off(): return
+        json = {}
+        json["root"] = "root"
+        json["path"] = "path"
+        json["paths"] = "paths"
+        """author
+        contributors
+        content
+        title
+        created
+        updated"""
+        doc = IndexDoc(json)
+        self.assertEqual(doc.root, "root", msg=f"doc.root must == 'root'")
+        self.assertEqual(doc.path, "path", msg=f"doc.path must == 'path'")
+        self.assertEqual(doc.paths, "paths", msg=f"doc.paths must == 'paths'")
+        self.assertIsNone(doc.author, msg=f"doc.author must be None")
+        self.assertIsNone(doc.content, msg=f"doc.content must be None")
+
     def test_index(self):
         self._print(f"SearchTests.test_index")
-        #if self._off(): return
+        if self._off(): return
         metadata = BuildingMetadata()
         bdocs = Bdocs(ROOT, metadata)
         win = WhooshIndexer(metadata, bdocs)
@@ -40,15 +61,19 @@ class SearchTests(unittest.TestCase):
         doc = cdocs.get_doc(docpath)
         self.assertEqual(doctext, doc, msg=f"{doc} must equal {doctext}")
 
-
         query = Query("please")
-        doc = bdocs.searcher.find_docs(query)
-        print(f"SearchTests.test_index: the query returned {doc}")
+        docs = bdocs.searcher.find_docs(query)
+        print(f"SearchTests.test_index: the query returned {docs}")
+        self.assertIn(docpath, docs, msg=f"query must return {docpath}")
+
+        docs = bdocs.searcher.find_docs_with_metadata(query)
+        for doc in docs:
+            print(f"SearchTests.test_index: metadata: {doc}")
 
         bdocs.delete_doc(docpath)
         doc = cdocs.get_doc(docpath)
         self.assertIsNone(doc, msg=f"{doc} must be none")
-        if False:
+        if True:
             bdocs.delete_root()
             exist = os.path.exists( bdocs.docs_root)
             self.assertEqual(exist, False, msg=f"new root at {bdocs.docs_root} must no longer exist")

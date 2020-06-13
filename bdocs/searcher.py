@@ -7,7 +7,6 @@ class Query(object):
     def __init__(self, query:Optional[str]=None):
         self._query:str = query
 
-
 class Searcher(metaclass=abc.ABCMeta):
     """
     searcher knows how to find docs.
