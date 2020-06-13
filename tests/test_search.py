@@ -63,16 +63,23 @@ class SearchTests(unittest.TestCase):
 
         query = Query("please")
         docs = bdocs.searcher.find_docs(query)
-        print(f"SearchTests.test_index: the query returned {docs}")
+        print(f"SearchTests.test_index: find: the query returned {docs}")
         self.assertIn(docpath, docs, msg=f"query must return {docpath}")
 
         docs = bdocs.searcher.find_docs_with_metadata(query)
+        print(f"SearchTests.test_index: find meta: the query returned {docs}")
         for doc in docs:
             print(f"SearchTests.test_index: metadata: {doc}")
+        self.assertEqual( len(docs), 1, msg=f"number of docs found must be 1, not {len(docs)} was last run successful?")
 
         bdocs.delete_doc(docpath)
         doc = cdocs.get_doc(docpath)
         self.assertIsNone(doc, msg=f"{doc} must be none")
+
+        docs = bdocs.searcher.find_docs(query)
+        print(f"SearchTests.test_index: find: the query returned {docs}")
+        self.assertEqual(len(docs), 0, msg=f"query must return nothing")
+
         if True:
             bdocs.delete_root()
             exist = os.path.exists( bdocs.docs_root)

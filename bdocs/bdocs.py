@@ -226,6 +226,7 @@ class Bdocs(BuildingDocs):
     def delete_doc(self, path:DocPath) -> None:
         filepath:FilePath = self.pather.get_full_file_path(path)
         self.deleter.delete(filepath)
+        self.indexer.remove_doc(path)
 
     def delete_doc_tree(self, path:DocPath) -> None:
         filepath = self.get_dir_for_docpath(path)

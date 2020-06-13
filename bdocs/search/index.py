@@ -7,9 +7,10 @@ class Index(metaclass=abc.ABCMeta):
     """ implementations of Index must have self._bdocs """
 
     def _check_index(self) -> None:
+        print(f">>>>> checking index for {self}")
         if not os.path.exists(self.get_index_root()):
-            os.mkdir(self._index)
-            self._get_index()
+            os.mkdir(self.get_index_root())
+            self._assure_index()
 
     def get_index_root(self) -> FilePath:
         root = self._bdocs.get_doc_root()
@@ -21,6 +22,6 @@ class Index(metaclass=abc.ABCMeta):
         shutil.rmtree(root)
 
     @abc.abstractmethod
-    def _get_index(self):
+    def _assure_index(self):
         pass
 

@@ -5,8 +5,9 @@ from bdocs.search.whoosh_index import WhooshIndex
 from bdocs.search.index_doc import IndexDoc
 from bdocs.building_metadata import BuildingMetadata
 from typing import Optional
-from whoosh.fields import Schema,  TEXT, ID
+from whoosh.fields import Schema, TEXT, ID
 from whoosh import index
+from whoosh.writing import AsyncWriter
 
 class WhooshIndexer(WhooshIndex, Indexer):
 
@@ -20,8 +21,8 @@ class WhooshIndexer(WhooshIndex, Indexer):
     def index_doc(self, path:DocPath, doc:Doc, metadata:Optional[IndexDoc]=None) -> None:
         if metadata is None:
             metadata = IndexDoc()
-        ix = self._get_index()
-        writer = ix.writer()
+        ix = index.open_dir(self.get_index_root())
+        writer = AsyncWriter(ix)
         writer.add_document(\
                             title=metadata.title,\
                             content=doc,\
@@ -34,8 +35,12 @@ class WhooshIndexer(WhooshIndex, Indexer):
                             updated=metadata.updated\
                             )
         writer.commit()
+        ix.close()
 
     def remove_doc(self, path:DocPath) -> None:
-        pass
+        ix = index.open_dir(self.get_index_root())
+        writer = AsyncWriter(ix)
+        writer.delete_by_term('path', path)
+        writer.commit()
 
 
