@@ -51,7 +51,7 @@ class BlockTests(unittest.TestCase):
         treelist = building.list_trees(["public", "internal", "images"])
         self._print(f"BlockTests.test_tree_list: treelist: {treelist}")
         for line in treelist:
-            print(f"   {line}")
+            self._print(f"   {line}")
         # test for a selection of paths expected
         paths = []
         paths.append("public/app/home/teams/todos/assignee/assignee.xml")

@@ -1,6 +1,10 @@
 jinja2==2.11.2
-cdocs==0.0.17
+cdocs==0.0.24
 pypinfo
 inflect
 dulwich
 Whoosh
+flask
+flask_restful
+flask_cors
+

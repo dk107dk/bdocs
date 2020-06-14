@@ -216,7 +216,6 @@ class Bdocs(BuildingDocs):
         self.writer.write(filepath, bs)
         self.indexer.index_doc(path, doc)
 
-
     def move_doc(self, fromdoc:DocPath, todoc:DocPath) -> None:
         self.mover.move_doc(fromdoc,todoc)
 
@@ -263,16 +262,16 @@ class Bdocs(BuildingDocs):
         pathnames = path.split("/")
         hashmark = self.config.get("filenames", "hashmark")
         results = {}
-        print("results:")
+        #print("results:")
         for k, v in tokens.items():
-            print(f"\n   looking for: {k}:{v} with {pathnames[0]}")
+            #print(f"\n   looking for: {k}:{v} with {pathnames[0]}")
             result = self._d( pathnames, tree , k, [], options )
             if result is not None:
                 docpath = ""
                 for _ in result[1]:
                     docpath += ("/"+_) if _.find(hashmark) == -1 else _
                 results[v] = docpath
-                print(f"   ...docpath: {docpath}, name: {v} ")
+                #print(f"   ...docpath: {docpath}, name: {v} ")
         return results
 
 #

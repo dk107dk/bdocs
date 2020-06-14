@@ -14,17 +14,17 @@ ROOT = PATH + "/" + ROOTNAME
 
 class SearchTests(unittest.TestCase):
 
-    noise = True
+    noise = False
     def _print(self, text:str) -> None:
         if self.noise:
             print(text)
 
     def _off(self):
-        return False
+        return True
 
     def test_index_doc(self):
         self._print(f"SearchTests.test_index_doc")
-        #if self._off(): return
+        if self._off(): return
         json = {}
         json["root"] = "root"
         json["path"] = "path"
