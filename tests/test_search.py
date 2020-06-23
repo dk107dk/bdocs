@@ -1,5 +1,6 @@
 import unittest
 from bdocs.building_metadata import BuildingMetadata
+from bdocs.bdocs_config import BdocsConfig
 from bdocs.bdocs import Bdocs
 from cdocs.cdocs import Cdocs
 from bdocs.search.whoosh_indexer import WhooshIndexer
@@ -8,19 +9,19 @@ from bdocs.searcher import Query
 from bdocs.search.index_doc import IndexDoc
 import os
 
-PATH = "/Users/davidkershaw/dev/bdocs/docs"
+PATH = "/Users/davidkershaw/dev/bdocs/server/docs"
 ROOTNAME = "search_test"
 ROOT = PATH + "/" + ROOTNAME
 
 class SearchTests(unittest.TestCase):
 
-    noise = False
+    noise = BdocsConfig().get("testing", "SearchTests_noise") == "on"
     def _print(self, text:str) -> None:
         if self.noise:
             print(text)
 
     def _off(self):
-        return True
+        return BdocsConfig().get("testing", "SearchTests") == "off"
 
     def test_index_doc(self):
         self._print(f"SearchTests.test_index_doc")

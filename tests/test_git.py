@@ -4,6 +4,7 @@ from bdocs.git.git_deleter import GitDeleter
 from bdocs.git.git_mover import GitMover
 from bdocs.building_metadata import BuildingMetadata
 from bdocs.bdocs import Bdocs
+from bdocs.bdocs_config import BdocsConfig
 from bdocs.file_util import FileUtil
 from bdocs.git.git_util import GitUtil
 from cdocs.cdocs import Cdocs
@@ -12,19 +13,19 @@ import unittest
 from dulwich.objects import Blob
 import time
 
-PATH = "/Users/davidkershaw/dev/bdocs/docs"
+PATH = "/Users/davidkershaw/dev/bdocs/server/docs"
 ROOTNAME = "git_test"
 ROOT = PATH + "/" + ROOTNAME
 
 class GitTests(unittest.TestCase):
 
-    noise = False
+    noise = BdocsConfig().get("testing", "GitTests_noise") == "on"
     def _print(self, text:str) -> None:
         if self.noise:
             print(text)
 
     def _off(self):
-        return True
+        return BdocsConfig().get("testing", "GitTests") == "off"
 
     def test_init(self):
         self._print(f"GitTests.test_init")
@@ -58,6 +59,9 @@ class GitTests(unittest.TestCase):
             bdocs.init_root()
         doctext = "adding to git"
         bdocs.put_doc("/app/git_test", doctext )
+        # from cdocs.simple_config import SimpleConfig
+        # __config = SimpleConfig()
+        # print(f"test_put: config path: {__config.get_config_path()}")
         cdocs = Cdocs(PATH + "/git")
         doc = cdocs.get_doc("/app/git_test")
         self.assertEqual(doctext, doc, msg=f"{doc} must equal {doctext}")
@@ -157,8 +161,8 @@ class GitTests(unittest.TestCase):
         fileutil = FileUtil( metadata, bdocs )
         filepaths = fileutil.get_file_names(filepath)
         self._print(f"GitTests.test_delete: filepaths: {filepaths}")
-        self.assertIn('/Users/davidkershaw/dev/bdocs/docs/git/app/git_test/fish.xml', \
-                       filepaths, msg=f"must have '/Users/davidkershaw/dev/bdocs/docs/git/app/git_test/fish.xml'")
+        self.assertIn('/Users/davidkershaw/dev/bdocs/server/docs/git/app/git_test/fish.xml', \
+                       filepaths, msg=f"must have '/Users/davidkershaw/dev/bdocs/server/docs/git/app/git_test/fish.xml'")
         #
         # do the delete
         #
@@ -288,7 +292,6 @@ class GitTests(unittest.TestCase):
         self._print(f"GitTests.test_tag")
         if self._off(): return
         metadata = BuildingMetadata()
-        cdocs = Cdocs(PATH + "/git")
         bdocs = Bdocs(PATH + "/git", metadata)
         git_rooter = GitRooter(metadata, bdocs)
         git_writer = GitWriter(metadata, bdocs)
@@ -297,6 +300,7 @@ class GitTests(unittest.TestCase):
         if not os.path.exists(bdocs.docs_root):
             os.mkdir(bdocs.docs_root)
             bdocs.init_root()
+        cdocs = Cdocs(PATH + "/git")
         #
         # first write
         #

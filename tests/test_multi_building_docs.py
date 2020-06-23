@@ -9,18 +9,23 @@ from bdocs.building_metadata import BuildingMetadata
 import shutil
 import os
 
-BASE:FilePath = "/Users/davidkershaw/dev/bdocs"
+BASE:FilePath = "/Users/davidkershaw/dev/bdocs/server"
 PATH:FilePath = BASE + "/docs/example"
 
 class BlockTests(unittest.TestCase):
 
-    noise = False
+    noise = BdocsConfig().get("testing", "BlockTests_noise") == "on"
     def _print(self, text:str) -> None:
         if self.noise:
             print(text)
 
+    def _off(self):
+        return BdocsConfig().get("testing", "BlockTests") == "off"
+
     def test_unzip_doc_tree(self):
+        self._print(f"BlockTests.test_unzip_doc_tree")
         config = BdocsConfig()
+        if self._off(): return
         metadata = BuildingMetadata(config)
         building = Block(metadata)
         shutil.copyfile(BASE+"/tests/resources/test.zip", BASE+"/tests/resources/____.zip" )
@@ -33,6 +38,7 @@ class BlockTests(unittest.TestCase):
 
     def test_join(self):
         self._print(f"BlockTests.test_join")
+        if self._off(): return
         metadata = ContextMetadata()
         building = Block(metadata)
         tree = building.join_trees(["internal", "images"])
@@ -46,6 +52,7 @@ class BlockTests(unittest.TestCase):
 
     def test_tree_list(self):
         self._print(f"BlockTests.test_tree_list")
+        if self._off(): return
         metadata = ContextMetadata()
         building = Block(metadata)
         treelist = building.list_trees(["public", "internal", "images"])

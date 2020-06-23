@@ -3,13 +3,17 @@ import unittest
 
 class ConfigTests(unittest.TestCase):
 
-    noise = False
+    noise = BdocsConfig().get("testing", "ConfigTests_noise") == "on"
     def _print(self, text:str) -> None:
         if self.noise:
             print(text)
 
+    def off(self) -> bool:
+        return BdocsConfig().get("testing", "ConfigTests") == "off"
+
     def test_add_and_remove(self):
         self._print(f"ConfigTests.test_add_and_remove")
+        if self.off(): return
         cfg = BdocsConfig()
         cfg.add_to_config("foo", "bar", "baz")
         cfg = BdocsConfig()

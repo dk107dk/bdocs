@@ -1,15 +1,20 @@
+from bdocs.bdocs_config import BdocsConfig
 from bdocs.tree_util import TreeUtil
 import unittest
 
 class TreeUtilTests(unittest.TestCase):
 
-    noise = False
+    noise = BdocsConfig().get("testing", "TreeUtilTests_noise") == "on"
     def _print(self, text:str) -> None:
         if self.noise:
             print(text)
 
+    def _off(self):
+        return BdocsConfig().get("testing", "TreeUtilTests") == "off"
+
     def test_clone(self):
         self._print(f"TreeUtilTests.test_clone")
+        if self._off(): return
         tu = TreeUtil()
         one = { "a":"a", "b":"b", "m":{"n":"n", "o":"o"} }
         two = tu.clone(one)
@@ -21,6 +26,7 @@ class TreeUtilTests(unittest.TestCase):
 
     def test_size(self):
         self._print(f"TreeUtilTests.test_clone")
+        if self._off(): return
         tu = TreeUtil()
         tree = { "b":"BBB", "x":"x", "y":"y", "z":{"1":"1", "2":"2"}}
         n = tu.size(tree)
@@ -29,6 +35,7 @@ class TreeUtilTests(unittest.TestCase):
 
     def test_union(self):
         self._print(f"TreeUtilTests.test_clone")
+        if self._off(): return
         tu = TreeUtil()
         one = { "a":"a", "b":"b",   "m":{"n":"n", "o":"o"},                       "z":{"1":"one","2":"two"} }
         two = {          "b":"BBB",                         "x":"x", "y":"y",     "z":{"1":"1"}}
@@ -64,6 +71,7 @@ class TreeUtilTests(unittest.TestCase):
 
     def test_subtract(self):
         self._print(f"TreeUtilTests.test_subtract")
+        if self._off(): return
         tu = TreeUtil()
         subthis  = { "a":"a", "b":"b", "m":{"n":"n", "o":"o"} }
         fromthat = { "a":"a", "b":"b", "c":"c", "d":"d" }
