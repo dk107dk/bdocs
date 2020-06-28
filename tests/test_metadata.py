@@ -1,7 +1,8 @@
 import unittest
 from cdocs.context import ContextMetadata
 from bdocs.bdocs_config import BdocsConfig
-from bdocs.building_metadata import BuildingMetadata, RootInfo
+from bdocs.building_metadata import BuildingMetadata
+# RootInfo
 
 class MetadataTests(unittest.TestCase):
 
