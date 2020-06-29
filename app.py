@@ -9,6 +9,7 @@ from cdocs.cdocs import Cdocs
 from cdocs.context import Context
 from cdocs.context_metadata import ContextMetadata
 from bdocs.bdocs import Bdocs
+from bdocs.simple_null_transformer import SimpleNullTransformer
 from bdocs.bdocs_config import BdocsConfig
 from bdocs.building_metadata import BuildingMetadata
 from bdocs.block import Block
@@ -16,6 +17,11 @@ from bdocs.block import Block
 app = Flask(__name__)
 CORS(app)
 api = Api(app)
+
+
+for r in Resources().get_resources():
+    print(f"adding resource: {r.endpoint} = {r}")
+    api.add_resource(r, r.endpoint)
 
 
 @app.route('/tree/<path:root>')
@@ -59,14 +65,20 @@ def docs(docpath:str):
     print(f"> request path: {request.path}; docpath: {docpath}" )
     print(f"> current working directory is {os.getcwd()}")
     print(f"> limit to roots: {roots}")
-    metadata = ContextMetadata()
+    metadata = BuildingMetadata()
     context = Context(metadata)
     doc = ""
     if roots is None:
         doc = context.get_doc(docpath)
     else:
+        for root in roots:
+            info = metadata.get_root_info(root)
+            print(f"app.docs: root: {root}, info: {info}, transform: {info.transform}")
+            if not info.transform :
+                cdocs = context.keyed_cdocs[root]
+                cdocs.transformer = SimpleNullTransformer(cdocs)
         doc = context.get_doc_from_roots(roots,docpath)
-    print(f"cdocs at {docpath} found ")
+    print(f"cdocs at {docpath} found {doc} ")
     if doc is None:
         doc = "doc not found and no 'not found' doc returned"
     return doc
@@ -82,12 +94,18 @@ def json(docpath:str):
     print(f"request path: {request.path}; docpath: {docpath}" )
     print(f"current working directory is {os.getcwd()}")
     print(f"limit to roots: {roots}")
-    metadata = ContextMetadata()
+    metadata = BuildingMetadata()
     context = Context(metadata)
     doc = ""
     if roots is None:
         doc = context.get_doc(docpath)
     else:
+        for root in roots:
+            info = metadata.get_root_info(root)
+            print(f"app.docs: root: {root}, info: {info}, transform: {info.transform}")
+            if not info.transform :
+                cdocs = context.keyed_cdocs[root]
+                cdocs.transformer = SimpleNullTransformer(cdocs)
         doc = context.get_doc_from_roots(roots,docpath)
     print(f"cdocs at {docpath} found ")
     if doc is None:

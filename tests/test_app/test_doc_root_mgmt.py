@@ -29,17 +29,17 @@ class DocRootManagementTests(unittest.TestCase):
         mgmt = DocRootManagement()
 
         home = mgmt.finder.get_home_path("abcdefg")
-        print(f"DocRootManagementTests.test_get_paths: home: {home}")
+        self._print(f"DocRootManagementTests.test_get_paths: home: {home}")
         exists = os.path.exists(home)
         self.assertEqual(True, exists, msg=f"home {home} must exist")
 
         team = mgmt.finder.get_team_path("abcdefg", "ateam")
-        print(f"DocRootManagementTests.test_get_paths: team: {team}")
+        self._print(f"DocRootManagementTests.test_get_paths: team: {team}")
         exists = os.path.exists(team)
         self.assertEqual(True, exists, msg=f"team {team} must exist")
 
         project = mgmt.finder.get_project_path("abcdefg", "ateam", "aproject")
-        print(f"DocRootManagementTests.test_get_paths: project: {project}")
+        self._print(f"DocRootManagementTests.test_get_paths: project: {project}")
         exists = os.path.exists(project)
         self.assertEqual(True, exists, msg=f"project {project} must exist")
 
@@ -48,7 +48,7 @@ class DocRootManagementTests(unittest.TestCase):
         self.assertNotEqual(True, exists, msg=f"home {home} must not exist")
 
     def test_get_config_of(self):
-        self._print(f"DocRootManagementTests.test_get_paths")
+        self._print(f"DocRootManagementTests.test_get_config_of")
         if self._off(): return
         mgmt = DocRootManagement()
         account = "account1"

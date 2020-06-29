@@ -7,4 +7,6 @@ Whoosh
 flask
 flask_restful
 flask_cors
+mysql-connector-python==8.0.11
+SQLAlchemy==1.3.16
 

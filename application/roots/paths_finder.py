@@ -1,4 +1,5 @@
 import os
+import logging
 from application.app_config import AppConfig
 from cdocs.contextual_docs import FilePath
 
@@ -47,13 +48,13 @@ class PathsFinder(object):
         """
         cfg = self.config
         ur_root = cfg.get("ur", "root")
-        print(f"DocRootManagement.get_home_path_of: ur_root: {ur_root}, accountid: {accountid}")
+        logging.info(f"DocRootManagement.get_home_path_of: ur_root: {ur_root}, accountid: {accountid}")
         home = ur_root + os.sep + accountid[0:1]
-        print(f"DocRootManagement.get_home_path_of: home 1: {home}")
+        logging.info(f"DocRootManagement.get_home_path_of: home 1: {home}")
         home = home + os.sep + accountid[1:2]
-        print(f"DocRootManagement.get_home_path_of: home 2: {home}")
+        logging.info(f"DocRootManagement.get_home_path_of: home 2: {home}")
         home = home + os.sep + accountid
-        print(f"DocRootManagement.get_home_path_of: home 4: {home}")
+        logging.info(f"DocRootManagement.get_home_path_of: home 4: {home}")
         self.mkdir(home)
         return home
 
@@ -83,10 +84,10 @@ class PathsFinder(object):
 
     def mkdir(self, path) -> None:
         try:
-            print(f"PathFinder.mkdir: making directory: {path}")
+            logging.info(f"PathFinder.mkdir: making directory: {path}")
             os.makedirs(path)
         except Exception as e:
-            print(f"error!: {e}")
+            logging.info(f"PathsFinder.mkdir: caught {e}. nothing to do here.")
 
 
 

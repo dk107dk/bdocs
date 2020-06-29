@@ -1,4 +1,5 @@
 import os
+import logging
 from application.app_config import AppConfig
 from application.roots.paths_finder import PathsFinder
 from bdocs.bdocs_config import BdocsConfig
@@ -64,7 +65,7 @@ class DocRootManagement(object):
         self._create_default_notfound_if(accountid,teamid,projectid,rootinfo.notfound)
 
     def _create_default_notfound_if(self, accountid:str, teamid:str, projectid:str, rootplusdocpath):
-        print(f"DocRootManagement._create_default_notfound_if: a,t,p ids {accountid}, {teamid}, {projectid}, rootplusdocpath: {rootplusdocpath}")
+        logging.info(f"DocRootManagement._create_default_notfound_if: a,t,p ids {accountid}, {teamid}, {projectid}, rootplusdocpath: {rootplusdocpath}")
         if rootplusdocpath is None:
             return
         if rootplusdocpath.find("..") > -1:
@@ -121,7 +122,7 @@ class DocRootManagement(object):
         thecfg = BdocsConfig( self.finder.get_project_config_file_path(accountid, teamid, projectid) )
         path = self.finder.get_project_docs_dir_path(accountid, teamid, projectid)
         thepath = path + os.sep + rootinfo.name
-        print(f"DocRootManagement.generate_config_from_root_info: mkdir on {thepath}")
+        logging.info(f"DocRootManagement.generate_config_from_root_info: mkdir on {thepath}")
         self.finder.mkdir(thepath)
         self.add_rootinfo_to_config(thecfg, rootinfo)
         thecfg.just_add_to_config("notfound", rootinfo.name, rootinfo.notfound )
