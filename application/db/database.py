@@ -2,7 +2,15 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from application.app_config import AppConfig
 
-class SessionFactory(object):
+class Database(object):
+    """
+        use to get an sql alchemy engine and session.
+        use with closing. import closing from contextlib.
+        this:
+            with closing(Database.session(engine)()) as session:
+        is exactly the same as:
+            with closing(engine.session()) as session:
+    """
     _url = None
 
     @classmethod
@@ -16,17 +24,16 @@ class SessionFactory(object):
             cls._url = f'mysql+mysqlconnector://{user}:{password}@{host}:3306/{database}'
         return cls._url
 
-    @property
-    def engine(self):
-        url = SessionFactory.url()
-        engine = create_engine(url, pool_size=5, echo=True)
-        return engine
-
     @classmethod
     def session(cls, engine):
         Session = sessionmaker(bind=engine)
         return Session
 
-
+    @property
+    def engine(self):
+        url = Database.url()
+        engine = create_engine(url, pool_size=5, echo=True)
+        setattr(engine, "session", sessionmaker(bind=engine))
+        return engine
 
 

@@ -5,6 +5,7 @@ from application.roots.paths_finder import PathsFinder
 from bdocs.bdocs_config import BdocsConfig
 from cdocs.contextual_docs import FilePath
 from bdocs.root_info import RootInfo
+import shutil
 
 DEFAULT_ROOT_NAME = "default"
 DEFAULT_ROOT_JSON_NAME = "default_json"
@@ -36,7 +37,12 @@ class DocRootManagement(object):
 
 # ============
 
-    def get_config_of(self, accountid:str, teamid:str, projectid:str) -> BdocsConfig:
+    def delete_root(self, accountid, teamid, projectid, rootname ) -> None:
+        docspath = self.finder.get_project_docs_dir_path( accountid, teamid, projectid )
+        docspath += os.sep + rootname
+        shutil.rmtree(docspath)
+
+    def get_config_of(self, accountid, teamid, projectid) -> BdocsConfig:
         path = self.generate_config_if(accountid, teamid, projectid)
         cfg = BdocsConfig( path )
         return cfg
@@ -92,10 +98,10 @@ class DocRootManagement(object):
             with open(notfoundpath, 'w') as f:
                 f.write(nf)
 
-    def create_project(self, accountid:str, teamid:str, projectid:str) -> None:
+    def create_project(self, accountid, teamid, projectid) -> None:
         self.generate_config_if(accountid, teamid, projectid)
 
-    def generate_config_if(self, accountid:str, teamid:str, projectid:str) -> FilePath:
+    def generate_config_if(self, accountid, teamid, projectid) -> FilePath:
         path = self.finder.get_project_config_file_path(accountid, teamid, projectid)
         if os.path.exists(path):
             pass
@@ -103,7 +109,7 @@ class DocRootManagement(object):
             self.generate_config(accountid, teamid, projectid)
         return path
 
-    def generate_config(self, accountid:str, teamid:str, projectid:str) -> None:
+    def generate_config(self, accountid, teamid, projectid) -> None:
         rootinfo = RootInfo()
         path = self.finder.get_project_docs_dir_path(accountid, teamid, projectid)
         thedir = path + os.sep + DEFAULT_ROOT_NAME
@@ -115,8 +121,8 @@ class DocRootManagement(object):
         rootinfo.notfound = DEFAULT_ROOT_NAME + "/404.xml"
         self.generate_config_from_root_info(accountid, teamid, projectid, rootinfo)
 
-    def generate_config_from_root_info(self, accountid:str, \
-                                             teamid:str, projectid:str, \
+    def generate_config_from_root_info(self, accountid, \
+                                             teamid, projectid, \
                                              rootinfo:RootInfo ) -> None:
         ur_root = self.finder.get_ur_root_path()
         thecfg = BdocsConfig( self.finder.get_project_config_file_path(accountid, teamid, projectid) )

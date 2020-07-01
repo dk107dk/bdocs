@@ -42,10 +42,11 @@ class PathsFinder(object):
         ur_root = cfg.get("ur", "root")
         return ur_root
 
-    def get_home_path(self, accountid:str) -> FilePath:
+    def get_home_path(self, accountid) -> FilePath:
         """
         gets the home dir for an account. team dirs are created here.
         """
+        accountid = str(accountid)
         cfg = self.config
         ur_root = cfg.get("ur", "root")
         logging.info(f"DocRootManagement.get_home_path_of: ur_root: {ur_root}, accountid: {accountid}")
@@ -58,25 +59,30 @@ class PathsFinder(object):
         self.mkdir(home)
         return home
 
-    def get_team_path(self, accountid:str, teamid:str) -> FilePath:
+    def get_team_path(self, accountid, teamid) -> FilePath:
+        accountid = str(accountid)
+        teamid = str(teamid)
         path = self.get_home_path(accountid)
         path += os.sep + teamid
         self.mkdir(path)
         return path
 
-    def get_project_path( self, accountid:str, teamid:str, projectid:str ) -> FilePath:
+    def get_project_path( self, accountid, teamid, projectid ) -> FilePath:
+        accountid = str(accountid)
+        teamid = str(teamid)
+        projectid = str(projectid)
         path = self.get_team_path(accountid, teamid)
         path += os.sep + projectid
         self.mkdir(path)
         return path
 
-    def get_project_temp_dir_path( self, accountid:str, teamid:str, projectid:str ) -> FilePath:
+    def get_project_temp_dir_path( self, accountid, teamid, projectid ) -> FilePath:
         path = self.get_project_path(accountid, teamid, projectid)
         path += os.sep + TEMP_DIR_NAME
         self.mkdir(path)
         return path
 
-    def get_project_docs_dir_path( self, accountid:str, teamid:str, projectid:str ) -> FilePath:
+    def get_project_docs_dir_path( self, accountid, teamid, projectid ) -> FilePath:
         path = self.get_project_path(accountid, teamid, projectid)
         path += os.sep + DOCS_DIR_NAME
         self.mkdir(path)

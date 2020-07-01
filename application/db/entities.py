@@ -1,20 +1,10 @@
 import logging
-import uuid
 from datetime import datetime
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy import Column, Integer, String, ForeignKey, Boolean, Table, DateTime
+from sqlalchemy import Column, Integer, String, ForeignKey, Table, DateTime
 from sqlalchemy.orm import relationship
-#from application.session_factory import SessionFactory
 #logging.basicConfig()
 #logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)
-
-
-"""class ID(object):
-    __call__(self):
-        return str(uuid4())
-"""
 
 Base = declarative_base()
 
@@ -54,7 +44,7 @@ class Entity(Base):
         return hash(f"{self.__class__.__name__}{self.id}")
 
 
-class User(Entity):
+class UserEntity(Entity):
     __tablename__ = "user"
     __mapper_args__ = {"concrete": True}
 
@@ -63,10 +53,10 @@ class User(Entity):
     family_name = Column(String(50))
     created_at = Column(DateTime, default=datetime.now())
 
-    teams = relationship("Team", secondary=user_team_role_table, lazy="joined")
-    projects = relationship("Project", secondary=user_project_role_table, lazy="joined")
+    teams = relationship("TeamEntity", secondary=user_team_role_table, lazy="joined")
+    projects = relationship("ProjectEntity", secondary=user_project_role_table, lazy="joined")
 
-class Team(Entity):
+class TeamEntity(Entity):
     __tablename__ = "team"
     __mapper_args__ = {"concrete": True}
 
@@ -74,16 +64,16 @@ class Team(Entity):
     creator_id = Column(Integer, ForeignKey("user.id") )
     created_at = Column(DateTime, default=datetime.now())
 
-    users = relationship("User", secondary=user_team_role_table, lazy="joined")
-    projects = relationship("Project", lazy="joined")
+    users = relationship("UserEntity", secondary=user_team_role_table, lazy="joined")
+    projects = relationship("ProjectEntity", lazy="joined")
 
-class Role(Entity):
+class RoleEntity(Entity):
     __tablename__ = "role"
     __mapper_args__ = {"concrete": True}
 
     name = Column(String(20))
 
-class Project(Entity):
+class ProjectEntity(Entity):
     __tablename__ = "project"
     __mapper_args__ = {"concrete": True}
 
@@ -92,8 +82,8 @@ class Project(Entity):
     created_at = Column(DateTime, default=datetime.now())
     team_id = Column(Integer, ForeignKey("team.id"))
 
-    team = relationship("Team")
-    users = relationship("User", secondary=user_project_role_table, lazy="joined")
+    team = relationship("TeamEntity")
+    users = relationship("UserEntity", secondary=user_project_role_table, lazy="joined")
 
 
 
