@@ -2,6 +2,7 @@ from application.db.database import Database
 from application.db.entities import UserEntity, TeamEntity, ProjectEntity, RoleEntity, Base
 from application.db.standup import Standup, Shutdown
 from application.app_config import AppConfig
+from application.db.entities import Roles
 from bdocs.bdocs_config import BdocsConfig
 import unittest
 from sqlalchemy import inspect
@@ -93,8 +94,8 @@ class DatabaseTests(unittest.TestCase):
 
         engine = Database().engine
         with closing(engine.session()) as session:
-            owner = session.query(RoleEntity).filter_by(name='Owner').first()
-            member = session.query(RoleEntity).filter_by(name='Member').first()
+            owner = session.query(RoleEntity).filter_by(id=Roles.OWNER).first()
+            member = session.query(RoleEntity).filter_by(id=Roles.MEMBER).first()
             print(f"DatabaseTests.test_all: found roles: {[owner, member]}")
 
             david = UserEntity(given_name='David', family_name='Kershaw', user_name='dkershaw@post.harvard.edu')
@@ -112,10 +113,10 @@ class DatabaseTests(unittest.TestCase):
             session.commit()
             with engine.connect() as c:
                 stmt = text(f"insert into user_team_role(user_id, team_id, role_id)\
-                          values({david.id}, {team.id}, {owner.id})")
+                          values({david.id}, {team.id}, '{Roles.OWNER.value}')")
                 c.execute(stmt)
                 stmt = text(f"insert into user_team_role(user_id, team_id, role_id)\
-                          values({john.id}, {team.id}, {member.id})")
+                          values({john.id}, {team.id}, '{Roles.MEMBER.value}')")
                 c.execute(stmt)
             session.commit()
 
@@ -128,10 +129,10 @@ class DatabaseTests(unittest.TestCase):
 
             with engine.connect() as c:
                 stmt = text(f"insert into user_project_role(user_id, project_id, role_id)\
-                          values({david.id}, {project.id}, {owner.id})")
+                          values({david.id}, {project.id}, '{Roles.OWNER.value}')")
                 c.execute(stmt)
                 stmt = text(f"insert into user_project_role(user_id, project_id, role_id)\
-                          values({john.id}, {project.id}, {member.id})")
+                          values({john.id}, {project.id}, '{Roles.MEMBER.value}')")
                 c.execute(stmt)
             print(f'DatabaseTests.test_all: added project')
             print("\n\n\n")

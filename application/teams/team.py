@@ -3,6 +3,7 @@ from typing import Optional,Dict,Any
 from application.db.entities import TeamEntity, RoleEntity
 from application.projects.project import Project
 from sqlalchemy.sql import text
+from application.db.entities import Roles
 
 class Team(TeamEntity):
 
@@ -19,8 +20,11 @@ class Team(TeamEntity):
         owner = session.query(RoleEntity).filter_by(name='Owner').first()
         with session.get_bind().engine.connect() as c:
             stmt = text(f"insert into user_team_role(user_id, team_id, role_id)\
-                      values({theowner.id}, {self.id}, {owner.id})")
+                      values({theowner.id}, {self.id}, '{Roles.OWNER.value}')")
             c.execute(stmt)
+        session.commit()
+        theowner.subscription_tracking[0].teams += 1
+        session.commit()
         self.create_my_project(theowner, session)
 
     def create_my_project(self, theowner, session):  # cannot hint User

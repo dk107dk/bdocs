@@ -1,10 +1,12 @@
 from application.db.database import Database
-from application.db.entities import Base, UserEntity
+from application.db.loader import Loader, Loaded
+from application.db.entities import Base, UserEntity, SubscriptionEntity
 from application.users.user import User
 from application.teams.team import Team
 from application.projects.project import Project
 from application.db.standup import Standup, Shutdown
 from application.app_config import AppConfig
+from application.db.entities import Roles
 from bdocs.bdocs_config import BdocsConfig
 import os
 import shutil
@@ -24,8 +26,6 @@ class EntityTests(unittest.TestCase):
     def test_project_create_and_delete_dir(self):
         self._print(f"EntityTests.test_project_create_and_delete_dir")
         if self._off(): return
-
-        return
 
         cfg = AppConfig()
         userid = 12345
@@ -58,7 +58,6 @@ class EntityTests(unittest.TestCase):
         path = root + os.sep + str(userid)[0:1]
         shutil.rmtree(path)
 
-
     def test_create_user_team_project_root(self):
         self._print(f"EntityTests.test_create_user_team_project_root")
         if self._off(): return
@@ -67,23 +66,93 @@ class EntityTests(unittest.TestCase):
         Standup()()
         print(f'EntityTests.test_create_user_team_project_root: stood up database')
 
+        loaded = Loader.load_by_name(SubscriptionEntity, "Free tier")
+        sub = loaded.thing
+        self.assertIsNotNone(sub, msg=f"'Free tier' subscription can not be None")
+        print(f"the subscription is: {sub}: {sub.id}")
+
         engine = Database().engine
         with closing(engine.session()) as session:
-            user = User(given_name='David', family_name='Kershaw', user_name='dkershaw@post.harvard.edu')
-            print(f'EntityTests.test_create_user_team_project_root: user: {user}')
+            user = User(given_name='David', family_name='K', \
+                        user_name='d@k.com', subscription_id=sub.id)
             user.create_me(session)
-
-            auser = session.query(User).filter_by(given_name='David').first()
-            session.commit()
-            self.assertIsNotNone(auser, msg=f"'David' user can not be None")
-
-            projects = auser.projects
-            self.assertIsNotNone(projects, msg=f"'David''s projects can not be None")
-            self.assertEqual(1, len(projects), msg=f"'David''s projects must be 1 not {len(projects)}")
-
-            team = projects[0].team
-            self.assertIsNotNone(team, msg=f"'David''s project's team can not be None")
+        print(f'EntityTests.test_create_user_team_project_root: user: {user}: {user.subscription_id}')
         engine.dispose()
+        #
+        #
+        #
+        loaded = Loader.load(User, user.id)
+        auser = loaded.thing
+        self.assertIsNotNone(auser, msg=f"'David' user can not be None")
 
-        Shutdown()()
+        projects = auser.projects
+        self.assertIsNotNone(projects, msg=f"'David''s projects can not be None")
+        self.assertEqual(1, len(projects), msg=f"'David''s projects must be 1 not {len(projects)}")
+
+        team = projects[0].team
+        self.assertIsNotNone(team, msg=f"'David''s project's team can not be None")
+
+        #
+        # check subscription stuff
+        #
+        asub = auser.subscription
+        self.assertEqual(sub.id, asub.id, msg=f"'David''s subscription must be {sub.id}, not {asub}")
+        asubt = auser.subscription_tracking
+        print(f"EntityTests.test_create_user_team_project_root: asubt: {asubt}")
+        print(f"EntityTests.test_create_user_team_project_root: sub: {sub}: {sub.users}")
+        self.assertIsNotNone(asubt, msg=f"'David''s subscription_tracking must not be None")
+        self.assertEqual( len (asubt), 1, msg=f"'David''s subscription_tracking must equal 1, not {len(asubt)}")
+        asubt = asubt[0]
+        self.assertEqual(asubt.users, 1, msg=f"'David''s subscription.users must equal the tracking .users, not {asubt.users}")
+        self.assertEqual(asubt.teams, 1, msg=f"'David''s sub tracking.teams must be 1, not {asubt.teams}")
+        self.assertEqual(asubt.projects, 1, msg=f"'David''s sub tracking.projects must be 1, not {asubt.projects}")
+        self.assertEqual(asubt.roots, 1, msg=f"'David''s sub tracking.roots must be 1, not {asubt.roots}")
+        #
+        # test update. set the value and commit. then repull the object and check.
+        #
+        auser.given_name = 'fish'
+        loaded.session.commit()
+        loaded.done()
+        loaded = Loader.load(User, user.id)
+        auser = loaded.thing
+        self.assertEqual(auser.given_name, 'fish', msg=f"'David' user must now have name 'fish', not {auser.given_name}")
+        loaded.done()
+        #
+        # create team
+        #
+        loaded = Loader.load(User, user.id)
+        session = loaded.session
+        auser = loaded.thing
+        newteam = Team( name="Fish Team",  )
+        auser.create_a_team(newteam, loaded.session )
+        session.commit()
+
+        #
+        # create another user
+        #
+        seconduser = User(given_name='Bats', family_name='Frogs', user_name='fish@bats.frog')
+        print(f'EntityTests.test_create_user_team_project_root: seconduser: {seconduser}')
+        seconduser.create_me(session, auser.id, auser.subscription_id)
+        seconduser.add_me_to_team(newteam, Roles.MEMBER, session)
+        seconduserid = seconduser.id
+        loaded.done()
+
+        loaded = Loader.load(User, seconduserid)
+        auser = loaded.thing
+        teams = auser.teams
+        self.assertIsNotNone(teams, msg=f"teams must not be None")
+        self.assertEqual(len(teams), 2, msg=f"{auser} must have 2 teams, not {len(teams)}")
+        loaded.done()
+
+        loaded = Loader.load(User, seconduserid)
+        seconduser = loaded.thing
+        teams = seconduser.teams
+        self.assertIsNotNone(teams, msg=f"teams must not be None")
+        self.assertEqual(len(teams), 2, msg=f"{auser} must have 2 teams, not {len(teams)}")
+        loaded.done()
+        """
+        """
+        #Shutdown()()
+
+
 

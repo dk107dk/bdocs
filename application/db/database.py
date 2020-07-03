@@ -7,8 +7,10 @@ class Database(object):
         use to get an sql alchemy engine and session.
         use with closing. import closing from contextlib.
         this:
+            engine = Database().engine
             with closing(Database.session(engine)()) as session:
         is exactly the same as:
+            engine = Database().engine
             with closing(engine.session()) as session:
     """
     _url = None

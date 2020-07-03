@@ -1,8 +1,10 @@
 import logging
 from typing import Optional,Dict,Any
-from application.db.entities import ProjectEntity, RoleEntity
+from application.db.entities import ProjectEntity, RoleEntity, UserEntity
+from application.db.loader import Loader
 from application.roots.doc_root_management import DocRootManagement
 from application.roots.paths_finder import PathsFinder
+from application.db.entities import Roles
 from sqlalchemy.sql import text
 import shutil
 
@@ -21,13 +23,21 @@ class Project(ProjectEntity):
         owner = session.query(RoleEntity).filter_by(name='Owner').first()
         with session.get_bind().engine.connect() as c:
             stmt = text(f"insert into user_project_role(user_id, project_id, role_id)\
-                  values({theowner.id}, {self.id}, {owner.id})")
+                  values({theowner.id}, {self.id}, '{Roles.OWNER.value}')")
             c.execute(stmt)
-        self.create_my_root(theowner.id, theteamid)
+        theowner.subscription_tracking[0].projects += 1
+        session.commit()
+        self.create_my_root(theowner.id, theteamid, session)
 
-    def create_my_root(self, theownerid, theteam):
+    def create_my_root(self, theownerid, theteam, session):
         mgmt = DocRootManagement()
         mgmt.create_project(theownerid, theteam, self.id)
+
+        loaded = Loader.load(UserEntity, theownerid)
+        theowner = loaded.thing
+        theowner.subscription_tracking[0].roots += 1
+        loaded.session.commit()
+
 
     def delete_project_dir(self):
         print(f"Project.delete_project_dir")
