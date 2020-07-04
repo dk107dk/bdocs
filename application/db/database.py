@@ -34,7 +34,7 @@ class Database(object):
     @property
     def engine(self):
         url = Database.url()
-        engine = create_engine(url, pool_size=5, echo=True)
+        engine = create_engine(url, pool_size=5) #, echo=True
         setattr(engine, "session", sessionmaker(bind=engine))
         return engine
 

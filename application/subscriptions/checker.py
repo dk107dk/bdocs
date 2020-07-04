@@ -1,8 +1,9 @@
 import logging
 import datetime
-from typing import Optional
+from typing import Optional,List
 from application.db.loader import Loader
-from application.users.user import User
+from application.db.database import Database
+from application.db.entities import SubscriptionEntity, SubscriptionTrackingEntity
 
 class SubscriptionException(Exception):
     pass
@@ -10,20 +11,86 @@ class SubscriptionException(Exception):
 class Checker(object):
 
     @classmethod
-    def incrementOrReject(cls, userid, field:str,
+    def decrement(cls, userid, field:str, decrease:Optional[int]=1):
+        subid, subtid = cls._get_subs_ids(userid)
+
+        subtloaded = Loader.load(SubscriptionTrackingEntity, subtid)
+        subt = subtloaded.thing
+
+        if field == "users":
+            subt.users -= decrease
+        elif field == "teams":
+            subt.teams -= decrease
+        elif field == "projects":
+            subt.projects -= decrease
+        elif field == "roots":
+            subt.roots -= decrease
+        elif field == "teams":
+            subt.teams -= decrease
+        elif field == 'docs':
+            subt.docs -= decrease
+        elif field == 'api_keys':
+            subt.api_keys -= decrease
+        elif field == 'total_doc_bytes':
+            subt.total_doc_bytes -= decrease
+        elif field == 'api_calls':
+            subt.api_calls -= decrease
+
+        subtloaded.session.commit()
+        subtloaded.engine.dispose()
+
+
+    @classmethod
+    def incrementOrRejectFields(cls, userid, field:str,
+                               amount_to_increase:Optional[int]=None,
+                               do_increment:Optional[bool]=True
+                               ) -> bool:
+        results = cls.incrementOrReject(userid, [field],amount_to_increase, do_increment)
+        return results[0]
+
+    @classmethod
+    def _get_subs_ids(cls, userid:str):
+        result = None
+        engine = Database().engine
+        sql = f"select u.subscription_id, ust.subscription_tracking_id from \
+                             user u, \
+                             user_subscription_tracking ust \
+                             where u.id='{userid}' and ust.user_id=u.id"
+        logging.info(f"\n\n>>>>>>>>>>>>>>> sql: {sql}\n\n")
+        with engine.connect() as c:
+            rs = c.execute(sql)
+            for row in rs:
+                result = (row[0], row[1])
+        engine.dispose()
+        return result
+
+    @classmethod
+    def incrementOrReject(cls, userid, fields:List[str],
                                amount_to_increase:Optional[int]=None,
                                do_increment:Optional[bool]=True
                                ) -> bool:
 
-        logging.info("Checker.incrementOrReject: {userid}, {field}, {amount_to_increase}, {do_increment}")
-        loaded = Loader.load(User, userid)
-        user = loaded.thing
-        sub = user.subscription
-        subt = user.subscription_tracker[0]
-        result = Checker._check(sub,subt,field,amount_to_increase, do_increment)
-        loaded.session.commit()
-        logging.info("Checker.incrementOrReject: {userid}, {field}, {amount_to_increase}, {do_increment}: returning {result}")
-        return result
+        print(f">> Checker.incrementOrReject: {userid}, {fields}, {amount_to_increase}, {do_increment}")
+        subid, subtid = cls._get_subs_ids(userid)
+
+        subloaded = Loader.load(SubscriptionEntity, subid)
+        sub = subloaded.thing
+
+        subtloaded = Loader.load(SubscriptionTrackingEntity, subtid)
+        subt = subtloaded.thing
+
+        results = []
+        for field in fields:
+            result = Checker._check(sub,subt,field,amount_to_increase, do_increment)
+            results.append(result)
+        logging.info(f"Checker.incrementOrReject: {userid}, {field}, {amount_to_increase}, {do_increment}: returning {result}")
+
+        subloaded.session.commit()
+        subloaded.engine.dispose()
+
+        subtloaded.session.commit()
+        subtloaded.engine.dispose()
+        return results
 
     @classmethod
     def _check(cls, sub, subt, field:str, \

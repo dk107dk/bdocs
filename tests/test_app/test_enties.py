@@ -27,22 +27,36 @@ class EntityTests(unittest.TestCase):
         self._print(f"EntityTests.test_project_create_and_delete_dir")
         if self._off(): return
 
+        Shutdown()()
+        Standup()()
+
         cfg = AppConfig()
-        userid = 12345
-        teamid = 6789
-        project = Project(name='My project', team_id=teamid, creator_id=userid)
-        project.id = 101112
-        project.creator_id = userid
-        print(f'EntityTests.test_project_create_and_delete_dir: user: {str(userid)}, team: {str(teamid)}, project: {str(project.id)}')
-        project.create_my_root( userid, teamid )
-        self._print(f"EntityTests.test_project_create_and_delete_dir: created dir")
+
+        uid = None
+        user = None
+        teams = None
+        projects = None
+        engine = Database().engine
+        with closing(engine.session()) as session:
+            user = User(given_name='David', family_name='K', user_name='d@k.com')
+            user.create_me(session)
+            session.commit()
+            uid = user.id
+            session.commit()
+            teams = user.teams
+            session.commit()
+            projects = user.projects
+        print(f'EntityTests.test_create_user_team_project_root: user: {user}: {user.subscription_id}')
+        engine.dispose()
+
+        print(f'EntityTests.test_project_create_and_delete_dir: user: {str(uid)}, team: {str(teams[0].id)}, project: {str(projects[0].id)}')
         root = cfg.get("ur", "root")
         path = root + os.sep + \
-               str(userid)[0:1] + \
-               os.sep + str(userid)[1:2] \
-               + os.sep + str(userid) \
-               + os.sep + str(teamid) \
-               + os.sep + str(project.id) \
+               str(uid)[0:1] + \
+               os.sep + str(uid)[1:2] \
+               + os.sep + str(uid) \
+               + os.sep + str(teams[0].id) \
+               + os.sep + str(projects[0].id) \
                + os.sep + "docs"\
                + os.sep + "default"
         print(f"EntityTests.test_project_create_and_delete_dir: path: {path}")
@@ -50,13 +64,19 @@ class EntityTests(unittest.TestCase):
         rootexists = os.path.exists(path)
         self.assertEqual(True, rootexists, msg=f"root at {path} must exist")
 
+        loaded = Loader.load(Project, projects[0].id)
+        project = loaded.thing
         project.delete_project_dir()
+        loaded.done()
 
         rootexists = os.path.exists(path)
         self.assertNotEqual(True, rootexists, msg=f"root at {path} must not exist")
-
-        path = root + os.sep + str(userid)[0:1]
+        #
+        # clean up even more
+        #
+        path = root + os.sep + str(uid)[0:1]
         shutil.rmtree(path)
+        Shutdown()()
 
     def test_create_user_team_project_root(self):
         self._print(f"EntityTests.test_create_user_team_project_root")
@@ -64,24 +84,33 @@ class EntityTests(unittest.TestCase):
 
         Shutdown()()
         Standup()()
+
         print(f'EntityTests.test_create_user_team_project_root: stood up database')
 
         loaded = Loader.load_by_name(SubscriptionEntity, "Free tier")
         sub = loaded.thing
+        subid = sub.id
+        print(f">>> this is the sub entity: {sub.__dict__}")
+        setattr(sub, 'values', sub.__dict__.copy() )
+
         self.assertIsNotNone(sub, msg=f"'Free tier' subscription can not be None")
         print(f"the subscription is: {sub}: {sub.id}")
-
+        loaded.done()
+        uid = None
         engine = Database().engine
         with closing(engine.session()) as session:
             user = User(given_name='David', family_name='K', \
-                        user_name='d@k.com', subscription_id=sub.id)
+                        user_name='d@k.com', subscription_id=subid)
             user.create_me(session)
-        print(f'EntityTests.test_create_user_team_project_root: user: {user}: {user.subscription_id}')
+            session.commit()
+            uid = user.id
+            session.commit()
+        print(f'EntityTests.test_create_user_team_project_root: user: {user}')
         engine.dispose()
         #
         #
         #
-        loaded = Loader.load(User, user.id)
+        loaded = Loader.load(User, uid)
         auser = loaded.thing
         self.assertIsNotNone(auser, msg=f"'David' user can not be None")
 
@@ -96,10 +125,12 @@ class EntityTests(unittest.TestCase):
         # check subscription stuff
         #
         asub = auser.subscription
-        self.assertEqual(sub.id, asub.id, msg=f"'David''s subscription must be {sub.id}, not {asub}")
+        self.assertEqual(subid, asub.id, msg=f"'David''s subscription must be {subid}, not {asub}")
         asubt = auser.subscription_tracking
+        loaded.session.commit()
+
         print(f"EntityTests.test_create_user_team_project_root: asubt: {asubt}")
-        print(f"EntityTests.test_create_user_team_project_root: sub: {sub}: {sub.users}")
+        print(f"EntityTests.test_create_user_team_project_root: sub: {sub}: {sub.__dict__}")
         self.assertIsNotNone(asubt, msg=f"'David''s subscription_tracking must not be None")
         self.assertEqual( len (asubt), 1, msg=f"'David''s subscription_tracking must equal 1, not {len(asubt)}")
         asubt = asubt[0]
@@ -113,14 +144,14 @@ class EntityTests(unittest.TestCase):
         auser.given_name = 'fish'
         loaded.session.commit()
         loaded.done()
-        loaded = Loader.load(User, user.id)
+        loaded = Loader.load(User, uid)
         auser = loaded.thing
         self.assertEqual(auser.given_name, 'fish', msg=f"'David' user must now have name 'fish', not {auser.given_name}")
         loaded.done()
         #
         # create team
         #
-        loaded = Loader.load(User, user.id)
+        loaded = Loader.load(User, uid)
         session = loaded.session
         auser = loaded.thing
         newteam = Team( name="Fish Team",  )
@@ -133,26 +164,21 @@ class EntityTests(unittest.TestCase):
         seconduser = User(given_name='Bats', family_name='Frogs', user_name='fish@bats.frog')
         print(f'EntityTests.test_create_user_team_project_root: seconduser: {seconduser}')
         seconduser.create_me(session, auser.id, auser.subscription_id)
+        session.commit()
         seconduser.add_me_to_team(newteam, Roles.MEMBER, session)
+        session.commit()
         seconduserid = seconduser.id
+        session.commit()
         loaded.done()
 
         loaded = Loader.load(User, seconduserid)
         auser = loaded.thing
         teams = auser.teams
         self.assertIsNotNone(teams, msg=f"teams must not be None")
-        self.assertEqual(len(teams), 2, msg=f"{auser} must have 2 teams, not {len(teams)}")
+        self.assertEqual(len(teams), 1, msg=f"{auser.given_name} ({auser.id}) must have 1 teams, not {len(teams)}")
         loaded.done()
 
-        loaded = Loader.load(User, seconduserid)
-        seconduser = loaded.thing
-        teams = seconduser.teams
-        self.assertIsNotNone(teams, msg=f"teams must not be None")
-        self.assertEqual(len(teams), 2, msg=f"{auser} must have 2 teams, not {len(teams)}")
-        loaded.done()
-        """
-        """
-        #Shutdown()()
+        Shutdown()()
 
 
 

@@ -88,7 +88,6 @@ class UserEntity(Entity):
     system_admin = Column(Boolean, default=False)
     subscription_id = Column(Integer, ForeignKey("subscription.id"))
 
-    #team = relationship("TeamEntity")
     teams = relationship("TeamEntity", secondary=user_team_role_table, lazy="joined")
     projects = relationship("ProjectEntity", secondary=user_project_role_table, lazy="joined")
     subscription = relationship("SubscriptionEntity")

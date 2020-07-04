@@ -1,5 +1,6 @@
 import os
 import logging
+from typing import List
 from application.app_config import AppConfig
 from application.roots.paths_finder import PathsFinder
 from bdocs.bdocs_config import BdocsConfig
@@ -47,10 +48,14 @@ class DocRootManagement(object):
         cfg = BdocsConfig( path )
         return cfg
 
-    def get_config_of(self, accountid:str, teamid:str, projectid:str) -> BdocsConfig:
-        path = self.generate_config_if(accountid, teamid, projectid)
-        cfg = BdocsConfig( path )
-        return cfg
+    def get_roots(self, accountid, teamid, projectid) -> List[str]:
+        cfg = self.get_config_of(accountid, teamid, projectid)
+        roots = cfg.get_items("docs")
+        return roots
+
+    def get_number_of_roots(self, accountid, teamid, projectid) -> int:
+        roots = self.get_roots(accountid, teamid, projectid)
+        return len(roots)
 
     def create_standard_root(self, accountid:str, teamid:str, projectid:str, rootname:str ) -> None:
         rootinfo = RootInfo()

@@ -4,7 +4,8 @@ from bdocs.simple_user import SimpleUser
 from application.db.entities import UserEntity, SubscriptionTrackingEntity
 from application.db.database import Database
 from application.teams.team import Team
-from application.subscriptions.finder import Finder
+from application.subscriptions.subscription_finder import SubscriptionFinder
+from application.subscriptions.checker import Checker, SubscriptionException
 from application.db.entities import Roles
 from contextlib import closing
 from sqlalchemy.sql import text
@@ -21,11 +22,23 @@ class User(UserEntity):
         session must be an open session that can be used
         to create the new user's team, project and role associations.
         """
-        self.creator_id = creatorid
+        print(f"User.create_me: creating user: {self}: cid: {self.creator_id}")
+        if creatorid is not None and self.creator_id is None:
+            print(f"User.create_me: setting my creator_id to the passed in creatorid: {creatorid}")
+            self.creator_id = creatorid
+        elif self.creator_id is not None and creatorid is None:
+            pass  # this is fine as-is
+        elif self.creator_id is None and creatorid is None:
+            pass  # this is fine as-is
+        elif self.creator_id == creatorid:
+            pass  # this is fine as-is
+        else:
+            raise SubscriptionException("creator_id: my creator_id: {self.creator_id} and passed in creatorid: {creatorid} do not match!")
+
         if self.subscription_id is None:
-            self.subscription_id = Finder.get_subscription_id_or_free_tier_id(creatorid, subscriptionid)
+            self.subscription_id = SubscriptionFinder.get_subscription_id_or_free_tier_id(creatorid, subscriptionid)
         """ if creatorid is None we are creating an account owner """
-        if creatorid is None:
+        if self.creator_id is None:
             session.add(self)
             session.commit()
             self.creator_id = self.id
@@ -35,20 +48,25 @@ class User(UserEntity):
             self.subscription_tracking = [sub]
             session.commit()
             self.create_my_team(session)
+            logging.info(f"User.create_me: created user: {self.id}")
             return True
         else:
             """ we are creating a regular user. they need to have
                 the same subscription tracking as the account owner """
-            ok = Checker.incrementOrReject(creatorid, "users")
+            ok = Checker.incrementOrReject(self.creator_id, "users")
+            print(f"User.create_me: checker for users with my id: {self.id} and creator: {self.creator_id} returned {ok}\n\n")
             if ok:
+                session.add(self)
+                session.commit()
                 sub = session.query(SubscriptionTrackingEntity).filter_by(creator_id=self.creator_id).first()
                 self.subscription_tracking = [sub]
                 session.commit()
                 sub.users = sub.users + 1
                 session.commit()
+                logging.info(f"User.create_me: created user: {self.id}")
+                return True
             else:
                 return False
-
 
     def create_my_team(self,session) -> None:
         team = Team(name='My team', creator_id=self.id)
@@ -61,7 +79,6 @@ class User(UserEntity):
     def add_me_to_team(self, team:Team, role:Roles, session) -> None:
         if not Roles.is_role(role):
             raise Exception(f"{role} is not a role")
-        engine = Database().engine
         with session.get_bind().engine.connect() as c:
             stmt = text(f"insert into user_team_role(user_id, team_id, role_id)\
                       values({self.id}, {team.id}, '{role.value}')")

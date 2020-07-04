@@ -2,7 +2,8 @@ from application.db.database import Database
 from application.db.entities import SubscriptionEntity, SubscriptionTrackingEntity
 from application.db.standup import Standup, Shutdown
 from application.subscriptions.checker import Checker
-from application.subscriptions.finder import Finder
+from application.subscriptions.subscription_finder import SubscriptionFinder
+from application.subscriptions.account_finder import AccountFinder
 from application.db.entities import Roles
 from application.users.user import User
 from bdocs.bdocs_config import BdocsConfig
@@ -22,7 +23,37 @@ class SubscriptionTests(unittest.TestCase):
     def _off(self):
         return BdocsConfig().get_with_default("testing", "SubscriptionTests", "on") == "off"
 
+    def test_account_finder(self):
+        self._print(f"SubscriptionTests.test_account_finder")
+        if self._off(): return
+        Shutdown()()
+        Standup()()
+
+        user = User(given_name='d',family_name='k', subscription_id=1)
+        engine = Database().engine
+        with closing(engine.session()) as session:
+            user.create_me(session)
+        engine.dispose()
+        self._print(f">>>>>> SubscriptionTests.test_account_finder: user 1: {user}: user_id: {user.id}")
+
+        user2 = User(given_name='a',family_name='c', creator_id=user.id)
+        self._print(f">>>>>>>>> prepared user2: {user2}: {user2.creator_id}\n")
+        engine = Database().engine
+        with closing(engine.session()) as session:
+            result = user2.create_me(session)
+            session.commit()
+            self._print(f">>>>>>>>> created user2: {result}: {user2}: id: {user2.id}: creator: {user2.creator_id}\n")
+        engine.dispose()
+
+        self._print(f"SubscriptionTests.test_account_finder: user 2: {user2}: {user2.id}")
+        aid = AccountFinder.get_account_owner_id(user2.id)
+        self.assertEqual(aid, user.id, msg=f'account owner id must be {user.id}, not {aid}')
+        Shutdown()()
+
     def test_subscription_finder(self):
+        self._print(f"SubscriptionTests.test_subscription_finder")
+        if self._off(): return
+
         Shutdown()()
         Standup()()
         #
@@ -33,11 +64,11 @@ class SubscriptionTests(unittest.TestCase):
         with closing(engine.session()) as session:
             user.create_me(session)
         engine.dispose()
-        sid = Finder.get_subscription_id_or_free_tier_id(creator_id=user.id)
+        sid = SubscriptionFinder.get_subscription_id_or_free_tier_id(creator_id=user.id)
         self.assertEqual(sid, 1, msg=f'for creator_id, subsciptionid must be 1, not {sid}')
-        sid = Finder.get_subscription_id_or_free_tier_id(subscriptionid=1)
+        sid = SubscriptionFinder.get_subscription_id_or_free_tier_id(subscriptionid=1)
         self.assertEqual(sid, 1, msg=f'for subscriptionid, subsciptionid must be 1, not {sid}')
-        sid = Finder.get_subscription_id_or_free_tier_id()
+        sid = SubscriptionFinder.get_subscription_id_or_free_tier_id()
         self.assertEqual(sid, 1, msg=f'for None, subsciptionid must be 1, not {sid}')
         Shutdown()()
 
@@ -117,10 +148,10 @@ class SubscriptionTests(unittest.TestCase):
         sub.api_cycle = "Monthly"
         subt.api_calls = 1
         subt.api_calls_current_period = datetime.date.today().month -1
-        print(f"SubscriptionTests.test_subscription_checker: current period 1: {subt.api_calls_current_period}")
+        self._print(f"SubscriptionTests.test_subscription_checker: current period 1: {subt.api_calls_current_period}")
         self.assertTrue(Checker._check(sub,subt, "api_calls"), msg=f"api_calls failed")
         self.assertEqual(subt.api_calls, 1, msg=f"api_calls failed")
-        print(f"SubscriptionTests.test_subscription_checker: current period 2: {subt.api_calls_current_period}")
+        self._print(f"SubscriptionTests.test_subscription_checker: current period 2: {subt.api_calls_current_period}")
         self.assertTrue(Checker._check(sub,subt, "api_calls"), msg=f"api_calls failed")
         self.assertEqual(subt.api_calls, 2, msg=f"api_calls failed")
         sub.api_calls = 1

@@ -23,7 +23,7 @@ class DatabaseTests(unittest.TestCase):
         self._print(f"DatabaseTests.test_connection")
         if self._off(): return
         engine = Database().engine
-        print(f'DatabaseTests.test_connection: engine: {engine}, session: {session}')
+        print(f'DatabaseTests.test_connection: engine: {engine}')
         with engine.connect() as connection:
             print(f"DatabaseTests.test_connection: connection: {connection}")
         engine.dispose()
@@ -33,13 +33,14 @@ class DatabaseTests(unittest.TestCase):
         if self._off(): return
 
         self._print(f"DatabaseTests.test_standup: standing up")
+        Shutdown()()
         Standup()()
         self._print(f"DatabaseTests.test_standup: stood up")
 
         engine = Database().engine
         inspector = inspect(engine)
         columns = inspector.get_columns('user')
-        self._print(f"DatabaseTests.test_standup: columns: {columns}")
+        #self._print(f"DatabaseTests.test_standup: columns: {columns}")
         self.assertIsNotNone( columns, msg="user columns cannot be None")
         self.assertNotEqual( 0, len(columns), msg=f"user table must have columns")
         rolecount = 0
@@ -60,6 +61,8 @@ class DatabaseTests(unittest.TestCase):
         self._print(f"DatabaseTests.test_user")
         if self._off(): return
 
+        Shutdown()()
+        Standup()()
         user = UserEntity(given_name='David', family_name='Kershaw', user_name='dkershaw@post.harvard.edu')
         print(f'DatabaseTests.test_user: user: {user}')
 
@@ -94,11 +97,11 @@ class DatabaseTests(unittest.TestCase):
 
         engine = Database().engine
         with closing(engine.session()) as session:
-            owner = session.query(RoleEntity).filter_by(id=Roles.OWNER).first()
-            member = session.query(RoleEntity).filter_by(id=Roles.MEMBER).first()
+            owner = session.query(RoleEntity).filter_by(id=Roles.OWNER.value).first()
+            member = session.query(RoleEntity).filter_by(id=Roles.MEMBER.value).first()
             print(f"DatabaseTests.test_all: found roles: {[owner, member]}")
 
-            david = UserEntity(given_name='David', family_name='Kershaw', user_name='dkershaw@post.harvard.edu')
+            david = UserEntity(given_name='David', family_name='K', user_name='dk@fish.com')
             print(f'DatabaseTests.test_all: user: {david}')
             session.add(david)
             john = UserEntity(given_name='John', family_name='Doe', user_name='doe@john.com')
@@ -108,24 +111,27 @@ class DatabaseTests(unittest.TestCase):
             print(f'DatabaseTests.test_all: added user')
 
             team = TeamEntity(name='my team', creator_id=david.id )
-            print(f'DatabaseTests.test_all: team: {team}')
             session.add(team)
             session.commit()
+
+            print(f'DatabaseTests.test_all: team: {team}: {team.id}')
             with engine.connect() as c:
-                stmt = text(f"insert into user_team_role(user_id, team_id, role_id)\
-                          values({david.id}, {team.id}, '{Roles.OWNER.value}')")
+                sql = f"insert into user_team_role(user_id, team_id, role_id) values({david.id}, {team.id}, '{Roles.OWNER.value}')"
+                print(f'\n=================>>> sql: {sql}')
+                stmt = text(sql)
                 c.execute(stmt)
-                stmt = text(f"insert into user_team_role(user_id, team_id, role_id)\
-                          values({john.id}, {team.id}, '{Roles.MEMBER.value}')")
+                sql = f"insert into user_team_role(user_id, team_id, role_id) values({john.id}, {team.id}, '{Roles.MEMBER.value}')"
+                print(f'\n=================>>> sql: {sql}')
+                stmt = text(sql)
                 c.execute(stmt)
             session.commit()
 
-            print(f'DatabaseTests.test_all: added team')
+            print(f'\n=================>>> DatabaseTests.test_all: added team: {team}: {team.id}')
 
             project = ProjectEntity(name='my project', team_id=team.id, creator_id=david.id)
-            print(f'DatabaseTests.test_all: project: {project}')
             session.add(project)
             session.commit()
+            print(f'DatabaseTests.test_all: project: {project}: {project.id}')
 
             with engine.connect() as c:
                 stmt = text(f"insert into user_project_role(user_id, project_id, role_id)\
@@ -134,42 +140,52 @@ class DatabaseTests(unittest.TestCase):
                 stmt = text(f"insert into user_project_role(user_id, project_id, role_id)\
                           values({john.id}, {project.id}, '{Roles.MEMBER.value}')")
                 c.execute(stmt)
-            print(f'DatabaseTests.test_all: added project')
+            print(f'DatabaseTests.test_all: added project: {project.id}')
             print("\n\n\n")
 
             # ------------------
             # now we check
             # ------------------
 
-            aproject = session.query(ProjectEntity).filter_by(name='my project').first()
+            aproject = session.query(ProjectEntity).filter_by(id=project.id).first()
+            session.commit()
             print(f"DatabaseTests.test_all: my project: {aproject}: {aproject.name}\n")
             self.assertIsNotNone(aproject, msg=f"'my project' can not be None")
 
             ateam = aproject.team
+            session.commit()
             print(f"DatabaseTests.test_all: project has a team: {ateam}: {ateam.name}\n")
             self.assertIsNotNone(ateam, msg=f"'my project' must have a team")
 
             users = ateam.users
-            print(f"DatabaseTests.test_all: team has users: {users}\n")
+            session.commit()
+            print(f"DatabaseTests.test_all: team {team.id} has users: {users}\n")
             self.assertIsNotNone(users, msg=f"'my project''s team must have users")
-            self.assertEqual( len(users), 2, msg=f"'my project''s team must have 2 users, not {users}")
-
+            self.assertEqual( len(users), 2, msg=f"'my project''s team must have 2 users, not {len(users)}")
+            #
+            # unclear why I have to reload user to find teams. :(
+            #
+            david = session.query(UserEntity).filter_by(id=david.id).first()
             teams = david.teams
+            session.commit()
             print(f"DatabaseTests.test_all: david has teams: {teams}\n")
             self.assertIsNotNone(teams, msg=f"david must have teams")
             self.assertEqual( len(teams), 1, msg=f"david must have 1 team, not {teams}")
 
             projects = david.projects
+            session.commit()
             print(f"DatabaseTests.test_all: david has projects: {projects}\n")
             self.assertIsNotNone(projects, msg=f"david must have projects")
             self.assertEqual( len(projects), 1, msg=f"david must have 1 project, not {projects}")
 
             projects = ateam.projects
+            session.commit()
             print(f"DatabaseTests.test_all: ateam has projects: {projects}\n")
             self.assertIsNotNone(users, msg=f"'my project''s team must have projects")
             self.assertEqual( len(projects), 1, msg=f"'my project''s team must have 1 project, not {projects}")
 
             session.commit()
+        engine.dispose()
 
         Shutdown()()
 
