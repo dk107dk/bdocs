@@ -5,8 +5,9 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Table, DateTime, For
 from sqlalchemy.types import Boolean, Text
 from sqlalchemy.orm import relationship
 from enum import Enum
+import json
 
-class Roles(Enum):
+class Roles(str, Enum):
     OWNER = "Owner"
     MEMBER = "Member"
     VIEWER = "Viewer"
@@ -18,6 +19,14 @@ class Roles(Enum):
         else:
             return True
 
+    @classmethod
+    def to_json(cls):
+        j = "["
+        j += json.dumps(cls.OWNER) + ","
+        j += json.dumps(cls.MEMBER) + ","
+        j += json.dumps(cls.VIEWER)
+        j += "]"
+        return j
 
 Base = declarative_base()
 
@@ -76,6 +85,11 @@ class Entity(Base):
     def __hash__(self):
         return hash(f"{self.__class__.__name__}{self.id}")
 
+    def get_dict(self):
+        d = self.__dict__.copy()
+        if "_sa_instance_state" in d:
+            del d["_sa_instance_state"]
+        return d
 
 class UserEntity(Entity):
     __tablename__ = "user"

@@ -1,5 +1,7 @@
 import logging
 from application.db.database import Database
+from application.db.loader import Loader
+from application.roots.doc_root_management import DocRootManagement
 from application.db.entities import Base, RoleEntity, Roles, SubscriptionEntity
 from application.users.user import User
 from contextlib import closing
@@ -34,6 +36,34 @@ class Standup(object):
 
         engine.dispose()
         print(f"Standup.__call__: stood up database")
+
+    def create_test_entities(self):
+        print("Standup.create_test_entities: starting")
+        adminid = Standup.get_admin_id()
+        engine = Database().engine
+        with closing(engine.session()) as session:
+            user = User(given_name='Frogs', family_name='Bugs', \
+                        user_name='f@b.com', creator_id=adminid)
+            print(f"Standup.create_test_entities: creating user: {user}")
+            user.create_me(session)
+            uid = user.id
+            print(f"Standup.create_test_entities: created user: {user}: {uid}")
+            session.commit()
+            user = User(given_name='Ants', family_name='Snails', \
+                        user_name='a@s.com', creator_id=uid)
+        engine.dispose()
+
+    @classmethod
+    def get_admin_id(cls):
+        mgmt = DocRootManagement()
+        mgmt.delete_all_projects()
+        loaded = Loader.load_by_user_name(User, "admin")
+        user = loaded.thing
+        uid = user.id
+        print(f"Standup.get_admin_id: the admin id is: {user}: {uid}")
+        loaded.done()
+        return uid
+
 
 class Shutdown(object):
 

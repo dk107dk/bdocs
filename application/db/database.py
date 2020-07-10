@@ -19,10 +19,10 @@ class Database(object):
     def url(cls):
         if cls._url is None:
             cfg = AppConfig()
-            user = cfg.get_with_default("db","user","root")
-            password = cfg.get_with_default("db","password", "")
-            host = cfg.get_with_default("db","host", "localhost")
-            database = cfg.get_with_default("db","database", "seedocs")
+            user = cfg.get("db","user","root")
+            password = cfg.get("db","password", "")
+            host = cfg.get("db","host", "localhost")
+            database = cfg.get("db","database", "seedocs")
             cls._url = f'mysql+mysqlconnector://{user}:{password}@{host}:3306/{database}'
         return cls._url
 

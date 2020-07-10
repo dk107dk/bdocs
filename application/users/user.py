@@ -76,11 +76,43 @@ class User(UserEntity):
         team.creator_id = self.id
         team.create_me(self, session)
 
-    def add_me_to_team(self, team:Team, role:Roles, session) -> None:
+    def add_me_to_team(self, teamid:int, role:Roles, session) -> None:
         if not Roles.is_role(role):
             raise Exception(f"{role} is not a role")
         with session.get_bind().engine.connect() as c:
             stmt = text(f"insert into user_team_role(user_id, team_id, role_id)\
-                      values({self.id}, {team.id}, '{role.value}')")
+                      values({self.id}, {teamid}, '{role.value}')")
             c.execute(stmt)
+
+    def add_me_to_project(self, projectid:int, role:Roles, session) -> None:
+        if not Roles.is_role(role):
+            raise Exception(f"{role} is not a role")
+        with session.get_bind().engine.connect() as c:
+            stmt = text(f"insert into user_project_role(user_id, project_id, role_id)\
+                      values({self.id}, {projectid}, '{role.value}')")
+            c.execute(stmt)
+
+    def remove_me_from_team(self, teamid:int, session) -> None:
+        with session.get_bind().engine.connect() as c:
+            stmt = text(f"delete from user_team_role \
+                          where user_id={self.id} and team_id={teamid})")
+            c.execute(stmt)
+
+    def remove_me_from_project(self, projectid:int, session) -> None:
+        with session.get_bind().engine.connect() as c:
+            stmt = text(f"delete from user_project_role where \
+                          user_id={self.id} and project_id={projectid})")
+            c.execute(stmt)
+
+    def delete_team(self, teamid:int) -> bool:
+        pass
+
+    def delete_project(self, projectid:int) -> bool:
+        pass
+
+    def delete_user(self, userid:int) -> bool:
+        pass
+
+    def delete_api_key(self, apikeyid:int) -> bool:
+        pass
 

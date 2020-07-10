@@ -18,6 +18,7 @@ class Team(TeamEntity):
         """
         ok = Checker.incrementOrReject(theowner.id, "teams")
         if ok:
+            self.creator_id = theowner.id
             session.add(self)
             session.commit()
             owner = session.query(RoleEntity).filter_by(name='Owner').first()

@@ -72,3 +72,29 @@ class Loader(object):
         loaded.thing = thing
         return loaded
 
+    @classmethod
+    def load_items_by_creator(self, entity_class, creatorid:str) -> Loaded:
+        loaded = Loaded()
+        engine = Database().engine
+        session = engine.session()
+        thing = session.query(entity_class).filter_by(creator_id=creatorid).all()
+        print(f"Loader.load_items_by_creator: found thing: {thing}")
+        session.commit()
+        loaded.session = session
+        loaded.engine = engine
+        loaded.thing = thing
+        return loaded
+
+    @classmethod
+    def load_by_user_name(self, entity_class, thename:str) -> Loaded:
+        loaded = Loaded()
+        engine = Database().engine
+        session = engine.session()
+        thing = session.query(entity_class).filter_by(user_name=thename).first()
+        session.commit()
+        loaded.session = session
+        loaded.engine = engine
+        loaded.thing = thing
+        return loaded
+
+

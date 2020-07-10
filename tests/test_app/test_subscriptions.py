@@ -15,13 +15,13 @@ import datetime
 
 class SubscriptionTests(unittest.TestCase):
 
-    noise = BdocsConfig().get_with_default("testing", "SubscriptionTests_noise", "on") == "on"
+    noise = BdocsConfig().get("testing", "SubscriptionTests_noise", "on") == "on"
     def _print(self, text:str) -> None:
         if self.noise:
             print(text)
 
     def _off(self):
-        return BdocsConfig().get_with_default("testing", "SubscriptionTests", "on") == "off"
+        return BdocsConfig().get("testing", "SubscriptionTests", "on") == "off"
 
     def test_account_finder(self):
         self._print(f"SubscriptionTests.test_account_finder")

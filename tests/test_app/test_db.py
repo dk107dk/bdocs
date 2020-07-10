@@ -11,13 +11,13 @@ from contextlib import closing
 
 class DatabaseTests(unittest.TestCase):
 
-    noise = BdocsConfig().get_with_default("testing", "DatabaseTests_noise", "on") == "on"
+    noise = BdocsConfig().get("testing", "DatabaseTests_noise", "on") == "on"
     def _print(self, text:str) -> None:
         if self.noise:
             print(text)
 
     def _off(self):
-        return BdocsConfig().get_with_default("testing", "DatabaseTests", "on") == "off"
+        return BdocsConfig().get("testing", "DatabaseTests", "on") == "off"
 
     def test_connection(self):
         self._print(f"DatabaseTests.test_connection")

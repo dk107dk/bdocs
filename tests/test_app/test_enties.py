@@ -15,13 +15,13 @@ from contextlib import closing
 
 class EntityTests(unittest.TestCase):
 
-    noise = BdocsConfig().get_with_default("testing", "EntityTests_noise", "on") == "on"
+    noise = BdocsConfig().get("testing", "EntityTests_noise", "on") == "on"
     def _print(self, text:str) -> None:
         if self.noise:
             print(text)
 
     def _off(self):
-        return BdocsConfig().get_with_default("testing", "EntityTests", "on") == "off"
+        return BdocsConfig().get("testing", "EntityTests", "on") == "off"
 
     def test_project_create_and_delete_dir(self):
         self._print(f"EntityTests.test_project_create_and_delete_dir")
@@ -112,6 +112,15 @@ class EntityTests(unittest.TestCase):
         #
         loaded = Loader.load(User, uid)
         auser = loaded.thing
+        print("\n\n\n****************************\n")
+        auser.id
+        print(f" __dict 1: {auser.__dict__}")
+        print(f" user: {auser}: {auser.id}")
+        print(f" __dict 2: {auser.__dict__}")
+        print(f" new dict: {auser.get_dict()}")
+        print("****************************\n\n\n\n")
+
+
         self.assertIsNotNone(auser, msg=f"'David' user can not be None")
 
         projects = auser.projects
@@ -165,7 +174,7 @@ class EntityTests(unittest.TestCase):
         print(f'EntityTests.test_create_user_team_project_root: seconduser: {seconduser}')
         seconduser.create_me(session, auser.id, auser.subscription_id)
         session.commit()
-        seconduser.add_me_to_team(newteam, Roles.MEMBER, session)
+        seconduser.add_me_to_team(newteam.id, Roles.MEMBER, session)
         session.commit()
         seconduserid = seconduser.id
         session.commit()

@@ -50,18 +50,19 @@ class Checker(object):
 
     @classmethod
     def _get_subs_ids(cls, userid:str):
+        print(f"Checker._get_subs_ids: starting. userid: {userid}")
         result = None
         engine = Database().engine
-        sql = f"select u.subscription_id, ust.subscription_tracking_id from \
-                             user u, \
-                             user_subscription_tracking ust \
-                             where u.id='{userid}' and ust.user_id=u.id"
-        logging.info(f"\n\n>>>>>>>>>>>>>>> sql: {sql}\n\n")
+        sql = f"select u.subscription_id, ust.subscription_tracking_id \
+from user u, user_subscription_tracking ust \
+where u.id='{userid}' and ust.user_id=u.id"
+        print(f"Checker._get_subs_ids: >>>>>>>>>>>>>>> sql: {sql}\n")
         with engine.connect() as c:
             rs = c.execute(sql)
             for row in rs:
                 result = (row[0], row[1])
         engine.dispose()
+        print(f"Checker._get_subs_ids: returning: {result}")
         return result
 
     @classmethod

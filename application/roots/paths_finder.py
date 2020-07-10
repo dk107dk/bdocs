@@ -49,13 +49,19 @@ class PathsFinder(object):
         accountid = str(accountid)
         cfg = self.config
         ur_root = cfg.get("ur", "root")
-        logging.info(f"DocRootManagement.get_home_path_of: ur_root: {ur_root}, accountid: {accountid}")
+        logging.info(f"PathsFinder.get_home_path_of: ur_root: {ur_root}, accountid: {accountid}")
         home = ur_root + os.sep + accountid[0:1]
-        logging.info(f"DocRootManagement.get_home_path_of: home 1: {home}")
-        home = home + os.sep + accountid[1:2]
-        logging.info(f"DocRootManagement.get_home_path_of: home 2: {home}")
+        logging.info(f"PathsFinder.get_home_path_of: home 1: {home}")
+        dir2 = ''
+        if len( accountid ) == 1:
+            dir2 =  accountid[0:1]
+        else:
+            dir2 = accountid[1:2]
+        logging.info(f"PathsFinder.get_home_path_of: home 2: {home} + dir2: {dir2} from {accountid} ")
+        home = home + os.sep + dir2
+        logging.info(f"PathsFinder.get_home_path_of: home 3: {home}")
         home = home + os.sep + accountid
-        logging.info(f"DocRootManagement.get_home_path_of: home 4: {home}")
+        logging.info(f"PathsFinder.get_home_path_of: home 4: {home}")
         self.mkdir(home)
         return home
 

@@ -7,9 +7,11 @@ from bdocs.bdocs_config import BdocsConfig
 from cdocs.contextual_docs import FilePath
 from bdocs.root_info import RootInfo
 import shutil
+from pathlib import Path
 
-DEFAULT_ROOT_NAME = "default"
-DEFAULT_ROOT_JSON_NAME = "default_json"
+DEFAULT_ROOT_NAME = "my_project"
+DEFAULT_ROOT_JSON_NAME = DEFAULT_ROOT_NAME + "_json"
+DEFAULT_TEST_FILE = DEFAULT_ROOT_NAME + "/test_doc.xml"
 
 class SuspiciousFilePath(Exception):
     pass
@@ -37,6 +39,15 @@ class DocRootManagement(object):
         self._finder = f
 
 # ============
+
+    def delete_all_projects(self):
+        root = self._config.get("ur", "root")
+        print(f"DocRootManagement.delete_all_projects: root: {root}")
+        dirs = [os.path.join(root, o) for o in os.listdir(root) if os.path.isdir(os.path.join(root,o))]
+        print(f"DocRootManagement.delete_all_projects: dirs: {dirs}")
+        for d in dirs:
+            print(f"DocRootManagement.delete_all_projects: deleting: {d}")
+            shutil.rmtree(d)
 
     def delete_root(self, accountid, teamid, projectid, rootname ) -> None:
         docspath = self.finder.get_project_docs_dir_path( accountid, teamid, projectid )
@@ -74,6 +85,7 @@ class DocRootManagement(object):
         cfg = BdocsConfig(path)
         self.add_rootinfo_to_config(cfg, rootinfo)
         self._create_default_notfound_if(accountid,teamid,projectid,rootinfo.notfound)
+        self._create_default_test_file_if(accountid,teamid,projectid, DEFAULT_TEST_FILE )
 
     def _create_default_notfound_if(self, accountid:str, teamid:str, projectid:str, rootplusdocpath):
         logging.info(f"DocRootManagement._create_default_notfound_if: a,t,p ids {accountid}, {teamid}, {projectid}, rootplusdocpath: {rootplusdocpath}")
@@ -102,6 +114,40 @@ class DocRootManagement(object):
                 nf = "not found"
             with open(notfoundpath, 'w') as f:
                 f.write(nf)
+
+
+    def _create_default_test_file_if(self, accountid:str, teamid:str, projectid:str, rootplusdocpath):
+        logging.info(f"DocRootManagement._create_test_file_if: a,t,p ids {accountid}, {teamid}, {projectid}, rootplusdocpath: {rootplusdocpath}")
+        if rootplusdocpath is None:
+            return
+        if rootplusdocpath.find("..") > -1:
+            logging.error(f"DocRootManagement._create_default_test_file_if:\
+ relative path in {path}: ids:\
+ {accountid}, {teamid}, {projectid}")
+            raise SuspiciousFilePath([accountid,teamid,projectid,path])
+        path = self.finder.get_project_config_file_path(accountid, teamid, projectid)
+        cfg = BdocsConfig(path)
+        docs_dir = cfg.get("locations", "docs_dir")
+        if rootplusdocpath[0:1] == '/':
+            pass
+        else:
+            rootplusdocpath = os.sep + rootplusdocpath
+        test_file_path = docs_dir + rootplusdocpath
+        if os.path.exists(test_file_path):
+            pass
+        else:
+            test_file_dir = test_file_path[0:test_file_path.rindex('/')]
+            print(f"DocRootManagement._create_default_test_file_if: test_file_dir: {test_file_dir}")
+            Path(test_file_dir).mkdir(parents=True, exist_ok=True)
+            test_file = 'Hello World!'
+            if test_file_path.find(".xml") > -1:
+                test_file = f"<doc>{test_file}</doc>"
+            else:
+                test_file = "not found"
+            with open(test_file_path, 'w') as f:
+                f.write(test_file)
+
+
 
     def create_project(self, accountid, teamid, projectid) -> None:
         self.generate_config_if(accountid, teamid, projectid)
@@ -148,6 +194,7 @@ class DocRootManagement(object):
         thecfg.just_add_to_config("locations", "docs_dir", path )
         thecfg.save_config()
         self._create_default_notfound_if(accountid,teamid,projectid,rootinfo.notfound)
+        self._create_default_test_file_if(accountid,teamid,projectid, DEFAULT_TEST_FILE)
 
     def add_rootinfo_to_config(self, thecfg:BdocsConfig, rootinfo:RootInfo ) -> None:
         thecfg.just_add_to_config("docs", rootinfo.name, rootinfo.file_path )
