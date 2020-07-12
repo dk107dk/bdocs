@@ -1,12 +1,15 @@
 import logging
 from typing import Optional #,Dict,Any
 from bdocs.simple_user import SimpleUser
-from application.db.entities import UserEntity, SubscriptionTrackingEntity
-from application.db.database import Database
 from application.teams.team import Team
 from application.subscriptions.subscription_finder import SubscriptionFinder
 from application.subscriptions.checker import Checker, SubscriptionException
-from application.db.entities import Roles
+from application.subscriptions.account_finder import AccountFinder
+from application.db.roles import Roles
+from application.db.entities import ApiKeyEntity
+from application.db.loader import Loader, Loaded
+from application.db.database import Database
+from application.db.entities import UserEntity, SubscriptionTrackingEntity
 from contextlib import closing
 from sqlalchemy.sql import text
 
@@ -53,6 +56,10 @@ class User(UserEntity):
         else:
             """ we are creating a regular user. they need to have
                 the same subscription tracking as the account owner """
+            aid = AccountFinder.get_account_owner_id(self.creator_id)
+            if not self.creator_id == aid :
+                logging.warning(f"User.create_me: cannot create user: the creator: {creator_id} is not the account holder: {aid}")
+                return False
             ok = Checker.incrementOrReject(self.creator_id, "users")
             print(f"User.create_me: checker for users with my id: {self.id} and creator: {self.creator_id} returned {ok}\n\n")
             if ok:
@@ -105,10 +112,48 @@ class User(UserEntity):
             c.execute(stmt)
 
     def delete_team(self, teamid:int) -> bool:
+        """
+        engine = Database().engine
+        with engine.connect() as c:
+            stmt = text(f"delete from user_team_role \
+                          where team_id={teamid})")
+            c.execute(stmt)
+        loaded = Loader.load(Team, teamid)
+        team = loaded.thing
+        loaded.session.delete(team)
+        loaded.done()
+        """
         pass
 
-    def delete_project(self, projectid:int) -> bool:
-        pass
+    def delete_project(self, projectid:int, session) -> bool:
+        #
+        # if the person owns the project or owns team or is team creator or is project creator:
+        #   remove users from project
+        #   delete api keys
+        #   delete roots
+        #   increment the subscription tracking
+        #
+        if self.id is None:
+            raise Exception("No Id")
+        loaded = Loader.load(Project, teamid)
+        project = loaded.thing
+        if not project.can_update_or_delete(self.id, session):
+            raise Exception("Cannot delete")
+        # remove users
+        engine = Database().engine
+        with engine.connect() as c:
+            stmt = text(f"delete from user_project_role where project_id={projectid})")
+            c.execute(stmt)
+        subt = self.subscription_tracking[0]
+        # remove keys
+        n = session.query(ApiKeyEntity).filter(ApiKeyEntity.project_id==projectid).delete()
+        Checker.decrement( self.id, "api_key", n )
+        # remove roots
+        project.delete_project_dir()
+        # delete project
+        session.delete(project)
+        Checker.decrement( self.id, "project" )
+        loaded.done()
 
     def delete_user(self, userid:int) -> bool:
         pass

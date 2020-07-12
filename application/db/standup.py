@@ -2,7 +2,8 @@ import logging
 from application.db.database import Database
 from application.db.loader import Loader
 from application.roots.doc_root_management import DocRootManagement
-from application.db.entities import Base, RoleEntity, Roles, SubscriptionEntity
+from application.db.entities import Base, RoleEntity, SubscriptionEntity
+from application.db.roles import Roles
 from application.users.user import User
 from contextlib import closing
 from enum import Enum

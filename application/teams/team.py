@@ -2,8 +2,9 @@ import logging
 from typing import Optional,Dict,Any
 from application.db.entities import TeamEntity, RoleEntity
 from application.projects.project import Project
+from application.subscriptions.account_finder import AccountFinder
 from sqlalchemy.sql import text
-from application.db.entities import Roles
+from application.db.roles import Roles
 from application.subscriptions.checker import Checker
 
 class Team(TeamEntity):
@@ -12,10 +13,12 @@ class Team(TeamEntity):
         super().__init__(**kwargs)
 
     def create_me(self, theowner, session) -> bool:  # cannot hint User
-        """
-        session must be an open session that can be used
-        to create the new team's project and role associations.
-        """
+        # check if we're acting on behalf of the account owner
+        aid = AccountFinder.get_account_owner_id(theowner.id)
+        if not theowner.id == aid :
+            logging.warning(f"Team.create_me: cannot create team: the new owner: {theowner.id} is not the account holder: {aid}")
+            return False
+        # check the subscription
         ok = Checker.incrementOrReject(theowner.id, "teams")
         if ok:
             self.creator_id = theowner.id
@@ -34,8 +37,9 @@ class Team(TeamEntity):
         else:
             return False
 
-    def create_my_project(self, theowner, session):  # cannot hint User
+    def create_my_project(self, theowner, session):
         project = Project(name='My project', team_id=self.id, creator_id=theowner.id)
         project.create_me(theowner, self.id, session)
+
 
 

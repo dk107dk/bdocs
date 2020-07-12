@@ -5,10 +5,31 @@ from adocs.adocs_roles import AdocsRoles
 from adocs.adocs_subscriptions import AdocsSubscriptions
 from adocs.adocs_docpath import AdocsDocpath
 from application.projects.project import Project
-from application.db.loader import Loader
-from typing import Dict, List, Tuple
+from application.teams.team import Team
+from application.users.user import User
+from application.db.entities import ApiKeyEntity
+from application.db.loader import Loader, Loaded
+from typing import Dict, Tuple
 
-class Adocs(AdocsUsers, AdocsTeams, AdocsProjects, AdocsRoles, AdocsSubscriptions, AdocsDocpath):
+class Adocs(AdocsUsers,
+            AdocsTeams,
+            AdocsProjects,
+            AdocsRoles,
+            AdocsSubscriptions,
+            AdocsDocpath):
+
+    @classmethod
+    def _get_loaded( cls, classname, id:int) -> Loaded:
+        c = None
+        if classname == "team":
+            c = Team
+        elif classname == "project":
+            c = Project
+        elif classname == "user":
+            c = User
+        elif classname == "api_key":
+            c = ApiKeyEntity
+        return Loader.load(c, id)
 
     @classmethod
     def _get_thing(cls, aclass, id:int) -> Dict:

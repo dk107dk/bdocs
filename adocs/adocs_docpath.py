@@ -16,7 +16,7 @@ class AdocsDocpath(object):
         tree = building.get_doc_tree(name)
         print(f"tree at {tree} found ")
         if tree is None:
-            tree = "get_doc_tree returned None"
+            tree = "get_doc_tree returned None" # implement better?
         return tree
 
     @classmethod
@@ -42,8 +42,6 @@ class AdocsDocpath(object):
                     cdocs.transformer = SimpleNullTransformer(cdocs)
             doc = context.get_doc_from_roots(roots,docpath)
         print(f"cdocs at {docpath} found {doc} ")
-        if doc is None:
-            pass #doc = f"Doc not found at docpath {docpath}. There is no 'not found' doc configured."
         return doc
 
     @classmethod
@@ -83,7 +81,7 @@ class AdocsDocpath(object):
                 doc = context.get_labels(docpath, recurse)
             else:
                 doc = context.get_labels_from_roots(roots, docpath, recurse)
-        print(f"cdocs at {docpath} found ")
+        print(f"cdocs at {docpath} found {doc}")
         return doc
 
 

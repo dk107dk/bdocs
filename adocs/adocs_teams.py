@@ -27,9 +27,12 @@ class AdocsTeams(object):
     def create_team(cls, creatorid:int, name:str, description:str) -> List[Dict]:
         loaded = Loader.load(User, creatorid)
         team = Team(name=name, description=description)
-        team.create_me(loaded.thing, loaded.session)
+        created = team.create_me(loaded.thing, loaded.session)
         loaded.done()
-        return team
+        if created:
+            return team
+        else:
+            return {"error":"/app/forms/errors/cannot_create_team"}
 
 
 

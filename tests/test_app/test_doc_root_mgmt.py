@@ -68,7 +68,7 @@ class DocRootManagementTests(unittest.TestCase):
         t = os.path.exists(home + os.sep + "config/config.ini")
         self.assertEqual(t, True, msg=f"config/config.ini does not exist")
 
-        t = os.path.exists(home + os.sep + "docs/default/404.xml")
+        t = os.path.exists(home + os.sep + "docs/my_project/404.xml")
         self.assertEqual(t, True, msg=f"404.xml does not exist")
 
         t = os.path.exists(home + os.sep + "tmp")

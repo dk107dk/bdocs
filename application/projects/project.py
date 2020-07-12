@@ -6,7 +6,7 @@ from application.roots.doc_root_management import DocRootManagement
 from application.subscriptions.checker import Checker
 from application.subscriptions.account_finder import AccountFinder
 from application.roots.paths_finder import PathsFinder
-from application.db.entities import Roles
+from application.db.roles import Roles
 from sqlalchemy.sql import text
 import shutil
 

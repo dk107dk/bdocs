@@ -71,7 +71,11 @@ class AdocsUsers(object):
         loaded.done()
 
     @classmethod
-    def add_user_to(cls, project_or_team:str, tid:int, uid:int) -> None:
+    def add_user_to(cls, actorid:int, project_or_team:str, tid:int, uid:int) -> bool:
+        loaded = cls._get_loaded(project_or_team, anid)
+        b = loaded.thing.can_update_or_delete(actorid,loaded.session)
+        if not b:
+            return False
         loaded = Loader.load(User, uid)
         user = loaded.thing
         session = loaded.session
@@ -80,6 +84,7 @@ class AdocsUsers(object):
         else:
             user.add_me_to_project(tid, Roles.MEMBER, session)
         loaded.done()
+        return True
 
     @classmethod
     def get_user_teams(cls, id:int) -> List[Dict]:

@@ -25,7 +25,7 @@ class RotateTests(unittest.TestCase):
         bdocs = Bdocs(BASE+ "/docs/example")
         metadata = BuildingMetadata()
         r = SimpleRotater(metadata, bdocs)
-        dirname = os.getcwd() +"/tests/resources/"
+        dirname = os.getcwd() +"/tests/test_resources/"
         filename = dirname + "rotateme.zip"
         self._print(f"RotateTests.test_rotate: filename: {filename}")
         newname = "__rotateme.zip"

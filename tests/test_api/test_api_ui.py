@@ -22,6 +22,11 @@ class ApiUiTests(unittest.TestCase):
     def test_index(self):
         self._print(f"ApiUiTests.test_index")
         if self.off(): return
+        #
+        # turning off. at some point there should be api tests here
+        #
+        return
+
         cdocs = Cdocs(ROOT)
         doc = cdocs.get_doc("/v1/index.html")
         self._print(f"ApiUiTests.test_index: doc: {doc}")

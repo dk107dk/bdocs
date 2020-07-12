@@ -39,13 +39,17 @@ class AddUserToTeamResource(BaseResource):
     endpoint = "/user/<int:uid>/team/<int:tid>"
 
     def post(self, id, tid):
-        return Adocs.add_user_to_("team", tid, uid)
+        parser.add_argument('actorid', required=True, help='/app/forms/errors/no_actor_id')
+        userdata = parser.parse_args()
+        return Adocs.add_user_to_(userdata["actorid"], "team", tid, uid)
 
 class AddUserToProjectResource(BaseResource):
     endpoint = "/user/<int:uid>/project/<int:tid>"
 
     def post(self, id, tid):
-        return Adocs.add_user_to_("project", tid, uid)
+        parser.add_argument('actorid', required=True, help='/app/forms/errors/no_actor_id')
+        userdata = parser.parse_args()
+        return Adocs.add_user_to_(userdata["actorid"], "project", tid, uid)
 
 class UserSubscriptionResource(BaseResource):
     endpoint = "/user/<int:id>/subscription"

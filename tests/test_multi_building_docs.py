@@ -28,8 +28,8 @@ class BlockTests(unittest.TestCase):
         if self._off(): return
         metadata = BuildingMetadata(config)
         building = Block(metadata)
-        shutil.copyfile(BASE+"/tests/resources/test.zip", BASE+"/tests/resources/____.zip" )
-        building.unzip_doc_tree( BASE+"/tests/resources/____.zip" )
+        shutil.copyfile(BASE+"/tests/test_resources/test.zip", BASE+"/tests/test_resources/____.zip" )
+        building.unzip_doc_tree( BASE+"/tests/test_resources/____.zip" )
         b = os.path.exists( BASE + "/docs/test")
         self.assertEqual(b, True, msg=f'{BASE + "/docs/test"} must exist')
         if b:

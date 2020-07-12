@@ -1,3 +1,4 @@
+import json
 import logging
 from datetime import datetime
 from sqlalchemy.ext.declarative import declarative_base
@@ -5,28 +6,9 @@ from sqlalchemy import Column, Integer, String, ForeignKey, Table, DateTime, For
 from sqlalchemy.types import Boolean, Text
 from sqlalchemy.orm import relationship
 from enum import Enum
-import json
-
-class Roles(str, Enum):
-    OWNER = "Owner"
-    MEMBER = "Member"
-    VIEWER = "Viewer"
-
-    @classmethod
-    def is_role(cls, arole):
-        if not arole is Roles.OWNER and not arole is Roles.MEMBER and not arole is Roles.VIEWER:
-            return False
-        else:
-            return True
-
-    @classmethod
-    def to_json(cls):
-        j = "["
-        j += json.dumps(cls.OWNER) + ","
-        j += json.dumps(cls.MEMBER) + ","
-        j += json.dumps(cls.VIEWER)
-        j += "]"
-        return j
+from typing import List, Tuple
+from application.db.owner_member import OwnerMember
+from application.db.roles import Roles
 
 Base = declarative_base()
 
@@ -59,8 +41,6 @@ user_subscription_tracking_table = Table(
     Column("user_id", Integer, ForeignKey("user.id")),
     Column("subscription_tracking_id", Integer, ForeignKey("subscription_tracking.id")),
 )
-
-
 
 class Entity(Base):
     """
@@ -108,8 +88,66 @@ class UserEntity(Entity):
     subscription_tracking = relationship("SubscriptionTrackingEntity", \
             secondary=user_subscription_tracking_table, lazy="joined")
 
+class RoleEntity(Entity):
+    __tablename__ = "role"
+    __mapper_args__ = {"concrete": True}
 
-class TeamEntity(Entity):
+    id = Column(String(20), primary_key=True)
+    name = Column(String(20))
+
+class Restricted(Entity):
+    __abstract__ = True
+
+    @property
+    def om(self):
+        if not hasattr(self, "_om"):
+            self._om = OwnerMember(self)
+        return self._om
+
+    def count_users(self, session):
+        return len(self.get_id_roles(session))
+
+    def can_update_or_delete(self, uid, session):
+        return self.om.can_update_or_delete(uid, session)
+
+    def get_owner_ids(self, session):
+        return self.om.get_owner_ids(session)
+
+    def get_id_roles(self, session) -> List[Tuple[int,str]]:
+        return self.om.get_id_roles(session)
+
+    def get_member_ids(self, session):
+        return self.om.get_member_ids(session)
+
+    def get_viewer_ids(self, session):
+        return self.om.get_viewer_ids(session)
+
+    def make_owner(self, uid, session) -> None:
+        return self.om.make_owner(uid, session)
+
+    def make_member(self, uid, session) -> None:
+        return self.om.make_member(uid, session)
+
+    def make_viewer(self, uid, session) -> None:
+        return self.om.make_viewer(uid, session)
+
+    def remove_user_with_role(self, uid, session) -> None:
+        return self.om.remove_user_with_role(uid, session)
+
+    def is_user_in(self, uid, session) -> bool:
+        return self.is_owner(uid,session) or self.is_member(uid,session) or self.is_viewer(uid, session)
+
+    def is_owner(self, uid, session) -> bool:
+        return uid in self.get_owner_ids(session)
+
+    def is_member(self, uid, session) -> bool:
+        return uid in self.get_member_ids(session)
+
+    def is_viewer(self, uid, session) -> bool:
+        return uid in self.get_viewer_ids(session)
+
+
+class TeamEntity(Restricted):
     __tablename__ = "team"
     __mapper_args__ = {"concrete": True}
 
@@ -119,14 +157,7 @@ class TeamEntity(Entity):
     users = relationship("UserEntity", secondary=user_team_role_table, lazy="joined")
     projects = relationship("ProjectEntity", lazy="joined")
 
-class RoleEntity(Entity):
-    __tablename__ = "role"
-    __mapper_args__ = {"concrete": True}
-
-    id = Column(String(20), primary_key=True)
-    name = Column(String(20))
-
-class ProjectEntity(Entity):
+class ProjectEntity(Restricted):
     __tablename__ = "project"
     __mapper_args__ = {"concrete": True}
 
@@ -147,7 +178,6 @@ class ApiKeyEntity(Entity):
     creator_id = Column(Integer, ForeignKey("user.id"), nullable=True )
 
     projects = relationship("ProjectEntity", secondary=api_key_project_table, lazy="joined")
-
 
 class SubscriptionEntity(Entity):
     __tablename__ = "subscription"

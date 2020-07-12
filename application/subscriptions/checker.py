@@ -50,19 +50,19 @@ class Checker(object):
 
     @classmethod
     def _get_subs_ids(cls, userid:str):
-        print(f"Checker._get_subs_ids: starting. userid: {userid}")
+        logging.info(f"Checker._get_subs_ids: starting. userid: {userid}")
         result = None
         engine = Database().engine
         sql = f"select u.subscription_id, ust.subscription_tracking_id \
 from user u, user_subscription_tracking ust \
 where u.id='{userid}' and ust.user_id=u.id"
-        print(f"Checker._get_subs_ids: >>>>>>>>>>>>>>> sql: {sql}\n")
+        logging.info(f"Checker._get_subs_ids: sql: {sql}")
         with engine.connect() as c:
             rs = c.execute(sql)
             for row in rs:
                 result = (row[0], row[1])
         engine.dispose()
-        print(f"Checker._get_subs_ids: returning: {result}")
+        logging.info(f"Checker._get_subs_ids: returning: {result}")
         return result
 
     @classmethod
@@ -71,7 +71,7 @@ where u.id='{userid}' and ust.user_id=u.id"
                                do_increment:Optional[bool]=True
                                ) -> bool:
 
-        print(f">> Checker.incrementOrReject: {userid}, {fields}, {amount_to_increase}, {do_increment}")
+        logging.info(f"Checker.incrementOrReject: {userid}, {fields}, {amount_to_increase}, {do_increment}")
         subid, subtid = cls._get_subs_ids(userid)
 
         subloaded = Loader.load(SubscriptionEntity, subid)
