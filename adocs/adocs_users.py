@@ -4,6 +4,8 @@ from application.projects.project import Project
 from application.db.entities import Roles
 from application.db.loader import Loader
 from application.db.database import Database
+from application.subscriptions.account_finder import AccountFinder
+from application.roots.doc_root_management import DocRootManagement
 from typing import Dict, List, Type, Union, Tuple, Optional, NewType
 from contextlib import closing
 
@@ -27,8 +29,7 @@ class AdocsUsers(object):
         return result
 
     @classmethod
-    def create_user(cls, userdata:Dict[str,STR_OR_ID]) -> Dict:
-        id = userdata.get('creator_id')
+    def create_user(cls, id, userdata:Dict[str,STR_OR_ID]) -> Dict:
         subscription_id = None
         if id is not None:
             sub = cls.get_user_subscription(id)
@@ -94,6 +95,39 @@ class AdocsUsers(object):
             result.append( { "id":team.id, "name":team.name } )
         loaded.done()
         return result
+
+    @classmethod
+    def get_user_projects(cls, id:int) -> List[Dict]:
+        print(f"Adocs_users.get_user_projects: {id}")
+        loaded = Loader.load(User, id)
+        result = []
+        for project in loaded.thing.projects:
+            result.append( { "id":project.id, "name":project.name, "team_id":project.team_id, "team_name": project.team.name } )
+        loaded.done()
+        return result
+
+    @classmethod
+    def get_user_roots(cls, id:int) -> List[Dict]:
+        print(f"Adocs_users.get_user_roots: {id}")
+        uid = AccountFinder.get_account_owner_id( str(id) )
+        mgmt = DocRootManagement()
+        loaded = Loader.load(User, id)
+        result = []
+        for project in loaded.thing.projects:
+            pid = project.id
+            project_name = project.name
+            tid = project.team.id
+            team_name = project.team.name
+            roots = mgmt.get_roots(uid, tid, pid)
+            for _ in roots:
+                result.append({
+                                "project_id":pid, "project_name":project.name,
+                                "team_id":tid, "team_name": team_name,
+                                "root_name":_[0]
+                             })
+        loaded.done()
+        return result
+
 
     @classmethod
     def get_context_users(cls, thingtype:Type[Union[Project,Team]], id:int) -> List[Dict]:

@@ -39,7 +39,7 @@ class PathsFinder(object):
 
     def get_ur_root_path(self) -> FilePath:
         cfg = self.config
-        ur_root = cfg.get("ur", "root")
+        ur_root = cfg.get_ur_root_path()  #ur_root = cfg.get("ur", "root")
         return ur_root
 
     def get_home_path(self, accountid) -> FilePath:
@@ -48,7 +48,8 @@ class PathsFinder(object):
         """
         accountid = str(accountid)
         cfg = self.config
-        ur_root = cfg.get("ur", "root")
+        ur_root = self.get_ur_root_path()
+        #ur_root = cfg.get("ur", "root")
         logging.info(f"PathsFinder.get_home_path_of: ur_root: {ur_root}, accountid: {accountid}")
         home = ur_root + os.sep + accountid[0:1]
         logging.info(f"PathsFinder.get_home_path_of: home 1: {home}")

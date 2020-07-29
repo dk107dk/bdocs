@@ -1,3 +1,4 @@
+from application.app_config import AppConfig
 import unittest
 from cdocs.context import ContextMetadata
 from bdocs.bdocs_config import BdocsConfig
@@ -5,6 +6,11 @@ from bdocs.building_metadata import BuildingMetadata
 # RootInfo
 
 class MetadataTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        print("setting up MetadataTests")
+        AppConfig.setTesting()
 
     noise = BdocsConfig().get("testing", "MetadataTests_noise") == "on"
     def _print(self, text:str) -> None:

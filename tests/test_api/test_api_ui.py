@@ -1,3 +1,4 @@
+from application.app_config import AppConfig
 from cdocs.cdocs import Cdocs
 import unittest
 from bdocs.bdocs_config import BdocsConfig
@@ -10,6 +11,12 @@ class ApiUiTests(unittest.TestCase):
     """
     WARNING: this test class doesn't do anything useful yet. leave it off.
     """
+
+    @classmethod
+    def setUpClass(cls):
+        print("setting up ApiUiTests")
+        AppConfig.setTesting()
+
 
     noise = BdocsConfig().get("testing", "ApiUiTests_noise") == "on"
     def _print(self, text:str) -> None:

@@ -15,6 +15,12 @@ from contextlib import closing
 
 class EntityTests(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        print("setting up EntityTests")
+        AppConfig.setTesting()
+
+
     noise = BdocsConfig().get("testing", "EntityTests_noise", "on") == "on"
     def _print(self, text:str) -> None:
         if self.noise:
@@ -145,7 +151,7 @@ class EntityTests(unittest.TestCase):
         engine.dispose()
 
         self._print(f'EntityTests.test_project_create_and_delete_dir: user: {str(uid)}, team: {str(teams[0].id)}, project: {str(projects[0].id)}')
-        root = cfg.get("ur", "root")
+        root = cfg.get_ur_root_path()
         path = root + os.sep + \
                str(uid)[0:1] + \
                os.sep + ( str(uid) if len(str(uid)) == 1 else str(uid)[1:2] ) \

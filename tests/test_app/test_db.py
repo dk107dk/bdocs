@@ -11,6 +11,12 @@ from contextlib import closing
 
 class DatabaseTests(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        print("setting up DatabaseTests")
+        AppConfig.setTesting()
+
+
     noise = BdocsConfig().get("testing", "DatabaseTests_noise", "on") == "on"
     def _print(self, text:str) -> None:
         if self.noise:

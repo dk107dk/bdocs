@@ -1,8 +1,9 @@
 from application.teams.team import Team
+from application.users.user import User
 from application.db.entities import Roles, ApiKeyEntity, SubscriptionEntity, SubscriptionTrackingEntity
 from application.db.loader import Loader
 from application.db.database import Database
-from typing import Dict, List
+from typing import Dict, List, Any
 
 class AdocsTeams(object):
 
@@ -24,13 +25,14 @@ class AdocsTeams(object):
         return result
 
     @classmethod
-    def create_team(cls, creatorid:int, name:str, description:str) -> List[Dict]:
-        loaded = Loader.load(User, creatorid)
-        team = Team(name=name, description=description)
-        created = team.create_me(loaded.thing, loaded.session)
+    def create_team(cls, id, teamdata:Dict[str,Any]) -> List[Dict]:
+        print(f"adocs_teams.create_team: {id}, {teamdata}")
+        loaded = Loader.load(User, id)
+        team = Team(name=teamdata.get('name'), description=teamdata.get('description'))
+        created = loaded.thing.create_a_team(team, loaded.session)
         loaded.done()
         if created:
-            return team
+            return team.get_dict()
         else:
             return {"error":"/app/forms/errors/cannot_create_team"}
 

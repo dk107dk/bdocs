@@ -12,11 +12,19 @@ from application.db.database import Database
 from application.db.entities import UserEntity, SubscriptionTrackingEntity
 from contextlib import closing
 from sqlalchemy.sql import text
+from sqlalchemy.orm.exc import DetachedInstanceError
 
 class User(UserEntity):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+    def __str__(self):
+        try:
+            return f"{type(self)}: {self.id}: given_name: {self.given_name}, family: {self.family_name}, user_name: {self.user_name}, creator_id: {self.creator_id}"
+        except DetachedInstanceError as e:
+            logging.error(f"User.__str__: handling error: {e}. will continue.")
+            return f"{type(self)}"
 
     def create_me(self, session, \
             creatorid:Optional[str]=None, \
@@ -75,13 +83,13 @@ class User(UserEntity):
             else:
                 return False
 
-    def create_my_team(self,session) -> None:
+    def create_my_team(self,session) -> bool:
         team = Team(name='My team', creator_id=self.id)
-        team.create_me(self, session)
+        return team.create_me(self, session)
 
-    def create_a_team(self, team:Team, session) -> None:
+    def create_a_team(self, team:Team, session) -> bool:
         team.creator_id = self.id
-        team.create_me(self, session)
+        return team.create_me(self, session)
 
     def add_me_to_team(self, teamid:int, role:Roles, session) -> None:
         if not Roles.is_role(role):

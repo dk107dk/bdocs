@@ -41,7 +41,7 @@ class DocRootManagement(object):
 # ============
 
     def delete_all_projects(self):
-        root = self._config.get("ur", "root")
+        root = self.finder.get_ur_root_path()
         print(f"DocRootManagement.delete_all_projects: root: {root}")
         dirs = [os.path.join(root, o) for o in os.listdir(root) if os.path.isdir(os.path.join(root,o))]
         print(f"DocRootManagement.delete_all_projects: dirs: {dirs}")
@@ -199,7 +199,7 @@ class DocRootManagement(object):
     def add_rootinfo_to_config(self, thecfg:BdocsConfig, rootinfo:RootInfo ) -> None:
         thecfg.just_add_to_config("docs", rootinfo.name, rootinfo.file_path )
         if "edit_cdocs_json" in rootinfo.features:
-            thecfg.just_add_to_config("docs", rootinfo.name + "_json", rootinfo.file_path + "_json" )
+            thecfg.just_add_to_config("docs", rootinfo.name + "_json", rootinfo.file_path  )
             thecfg.just_add_to_config("accepts", rootinfo.name + "_json", "json" )
             thecfg.just_add_to_config("features", rootinfo.name + "_json", "search" )
             thecfg.just_add_to_config("formats", rootinfo.name + "_json", "json" )

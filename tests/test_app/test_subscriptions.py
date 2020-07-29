@@ -1,3 +1,4 @@
+from application.app_config import AppConfig
 from application.db.database import Database
 from application.db.entities import SubscriptionEntity, SubscriptionTrackingEntity
 from application.db.standup import Standup, Shutdown
@@ -14,6 +15,12 @@ from contextlib import closing
 import datetime
 
 class SubscriptionTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        print("setting up SubscriptionTests")
+        AppConfig.setTesting()
+
 
     noise = BdocsConfig().get("testing", "SubscriptionTests_noise", "on") == "on"
     def _print(self, text:str) -> None:

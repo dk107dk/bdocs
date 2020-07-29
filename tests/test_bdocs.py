@@ -1,3 +1,4 @@
+from application.app_config import AppConfig
 from bdocs.bdocs import Bdocs
 from bdocs.bdocs_config import BdocsConfig
 from bdocs.printer import Printer
@@ -20,6 +21,11 @@ import inspect
 
 class BdocsTests(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        print("setting up BdocsTests")
+        AppConfig.setTesting()
+
     def _debug(self):
         self.logger.setLevel(level=logging.DEBUG)
         self.logger.debug("SET THE LEVEL TO DEBUG")
@@ -37,6 +43,10 @@ class BdocsTests(unittest.TestCase):
 
     def off(self) -> bool:
         return BdocsConfig().get("testing", "BdocsTests") == "off"
+
+    ###################
+    # tests
+    ###################
 
     def test_zip_doc_tree(self):
         self._print(f"BdocsTests.test_zip_doc_tree")

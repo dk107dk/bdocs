@@ -39,6 +39,7 @@ class Project(ProjectEntity):
     def create_my_root(self, theownerid, theteam ) -> bool:
         ok = Checker.incrementOrReject(theownerid, "roots")
         if ok:
+            print("Project.create_my_root: starting")
             self._create_my_root(theownerid, theteam)
             loaded = Loader.load(UserEntity, theownerid)
             theowner = loaded.thing
@@ -46,6 +47,7 @@ class Project(ProjectEntity):
             loaded.session.commit()
             loaded.done()
         else:
+            print("Project.create_my_root: cannot create root because subscription full")
             return False
 
     def _create_my_root(self, theownerid, theteam) -> bool :

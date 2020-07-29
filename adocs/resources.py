@@ -5,12 +5,17 @@ from adocs.users.user import (UserResource,
                               UserSubscriptionResource,
                               UserSubscriptionTrackingResource,
                               AddUserToTeamResource,
+                              UserProjectsResource,
+                              UserRootsResource,
                               AddUserToProjectResource)
 from adocs.teams.team import TeamResource, TeamUsersResource, TeamProjectsResource
 from adocs.docpaths.docpath import (DocpathResource,
                                    DocpathJsonResource,
                                    DocpathTokensResource,
-                                   DocpathLabelsResource)
+                                   DocpathLabelsResource,
+                                   DocpathInternalLabelsResource,
+                                   DocpathListResource,
+                                   DocpathListRootResource)
 from adocs.projects.project import (ProjectResource,
                                    ProjectUsersResource,
                                    ProjectRootsResource,
@@ -28,10 +33,12 @@ class Resources(object):
                 UserResource, UsersResource, UserTeamsResource,
                 UserSubscriptionResource, UserSubscriptionTrackingResource,
                 AddUserToProjectResource, AddUserToTeamResource,
+                UserProjectsResource, UserRootsResource,
                 TeamResource, TeamUsersResource, TeamProjectsResource,
                 ProjectResource, ProjectUsersResource, ProjectRootsResource, ProjectKeysResource,
                 TreeResource, RootInfoResource,
-                DocpathResource, DocpathJsonResource, DocpathLabelsResource, DocpathTokensResource
+                DocpathResource, DocpathJsonResource, DocpathListResource, DocpathListRootResource,
+                DocpathLabelsResource, DocpathInternalLabelsResource, DocpathTokensResource
         ]
         du = DateUtils()
         for r in rs:

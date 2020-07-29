@@ -1,3 +1,4 @@
+from application.app_config import AppConfig
 import unittest
 from bdocs.building_metadata import BuildingMetadata
 from bdocs.bdocs_config import BdocsConfig
@@ -14,6 +15,12 @@ ROOTNAME = "search_test"
 ROOT = PATH + "/" + ROOTNAME
 
 class SearchTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        print("setting up SearchTests")
+        AppConfig.setTesting()
+
 
     noise = BdocsConfig().get("testing", "SearchTests_noise") == "on"
     def _print(self, text:str) -> None:

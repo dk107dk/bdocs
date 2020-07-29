@@ -1,7 +1,14 @@
+from application.app_config import AppConfig
 from bdocs.bdocs_config import BdocsConfig
 import unittest
 
 class ConfigTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        print("setting up ConfigTests")
+        AppConfig.setTesting()
+
 
     noise = BdocsConfig().get("testing", "ConfigTests_noise") == "on"
     def _print(self, text:str) -> None:

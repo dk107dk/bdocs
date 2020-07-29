@@ -43,15 +43,20 @@ class Standup(object):
         adminid = Standup.get_admin_id()
         engine = Database().engine
         with closing(engine.session()) as session:
-            user = User(given_name='Frogs', family_name='Bugs', \
-                        user_name='f@b.com', creator_id=adminid)
-            print(f"Standup.create_test_entities: creating user: {user}")
+            user = User(given_name='Frogs', family_name='Bugs', user_name='f@b.com')
             user.create_me(session)
+            session.commit()
+            print(f"Standup.create_test_entities: creating user: {user}")
             uid = user.id
             print(f"Standup.create_test_entities: created user: {user}: {uid}")
             session.commit()
+            #
             user = User(given_name='Ants', family_name='Snails', \
                         user_name='a@s.com', creator_id=uid)
+
+            user.create_me(session)
+            session.commit()
+
         engine.dispose()
 
     @classmethod

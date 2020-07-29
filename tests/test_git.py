@@ -1,3 +1,4 @@
+from application.app_config import AppConfig
 from bdocs.git.git_rooter import GitRooter
 from bdocs.git.git_writer import GitWriter
 from bdocs.git.git_deleter import GitDeleter
@@ -18,6 +19,11 @@ ROOTNAME = "git_test"
 ROOT = PATH + "/" + ROOTNAME
 
 class GitTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        print("setting up GitTests")
+        AppConfig.setTesting()
 
     noise = BdocsConfig().get("testing", "GitTests_noise") == "on"
     def _print(self, text:str) -> None:

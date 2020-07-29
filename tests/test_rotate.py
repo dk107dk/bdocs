@@ -1,3 +1,4 @@
+from application.app_config import AppConfig
 from bdocs.simple_rotater import SimpleRotater
 import unittest
 import os
@@ -10,6 +11,11 @@ from cdocs.contextual_docs import FilePath
 BASE:FilePath = "/Users/davidkershaw/dev/bdocs/server"
 
 class RotateTests(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        print("setting up RotateTests")
+        AppConfig.setTesting()
 
     noise = BdocsConfig().get("testing", "RotateTests_noise") == "on"
     def _print(self, text:str) -> None:

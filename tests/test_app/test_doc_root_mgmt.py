@@ -7,6 +7,11 @@ import shutil
 
 class DocRootManagementTests(unittest.TestCase):
 
+    @classmethod
+    def setUpClass(cls):
+        print("setting up DocRootManagementTests")
+        AppConfig.setTesting()
+
     noise = BdocsConfig().get("testing", "DocRootManagementTests_noise") == "on"
     def _print(self, text:str) -> None:
         if self.noise:
@@ -20,7 +25,7 @@ class DocRootManagementTests(unittest.TestCase):
         if self._off(): return
 
         cfg = AppConfig()
-        ur_root = cfg.get("ur","root")
+        ur_root = cfg.get_ur_root_path()
         self.assertIsNotNone(ur_root, msg=f"ur.root must not be None")
         home = ur_root + os.sep + "a/b/abcdefg"
         exists = os.path.exists(home)
@@ -56,9 +61,11 @@ class DocRootManagementTests(unittest.TestCase):
         project = "project1"
         cfg = mgmt.get_config_of(account, team, project)
         self.assertIsNotNone(cfg, msg=f"config of {account}, {team}, {project} must not be None")
+        # we had a problem with the _json project not pointing at my_project
+        self.assertEqual(cfg.get("docs", "my_project"), cfg.get("docs", "my_project_json"), msg=f"my_project and my_project_json must point to the same directory")
 
         cfg = AppConfig()
-        ur_root = cfg.get("ur","root")
+        ur_root = cfg.get_ur_root_path()
         self.assertIsNotNone(ur_root, msg=f"ur.root must not be None")
         home = ur_root + os.sep + "a/c/account1/team1/project1"
 
