@@ -1,12 +1,9 @@
-import abc
+from typing import Protocol, runtime_checkable
 
-class User(metaclass=abc.ABCMeta):
+@runtime_checkable
+class NamedUser(Protocol):
 
-    @abc.abstractmethod
-    def username(self) -> str:
+    def name_of_user(self) -> str:
         pass
 
-    @abc.abstractmethod
-    def password(self) -> str:
-        pass
 

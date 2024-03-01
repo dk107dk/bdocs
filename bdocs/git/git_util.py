@@ -1,6 +1,6 @@
 from cdocs.contextual_docs import FilePath
 from bdocs.building_metadata import BuildingMetadata
-from bdocs.user import User
+from bdocs.user import NamedUser
 from dulwich import porcelain
 from dulwich.repo import Repo
 from dulwich.walk import WalkEntry
@@ -134,13 +134,13 @@ class GitUtil:
                         logging.warning("{change.new.path} is not a blob. this may be a problem.")
             return content
 
-    def tag(self, tag_name:bytes, message:bytes, user:Optional[User]=None) -> None:
+    def tag(self, tag_name:bytes, message:bytes, user:Optional[NamedUser]=None) -> None:
         if tag_name is None:
             raise GitError("tag_name cannot be None")
         if message is None:
             raise GitError("message cannot be None")
         with self.open(self._bdocs.get_doc_root()) as repo:
-            author = user.username if user is not None else None
+            author = user.name_of_user if user is not None else None
             porcelain.tag_create(repo, tag_name, author=author, message=message, annotated=True)
 
     def get_tags(self) -> Dict[bytes,bytes]:

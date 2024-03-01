@@ -2,7 +2,6 @@ import os.path
 from cdocs.contextual_docs import Doc, FilePath
 from bdocs.building_metadata import BuildingMetadata
 from bdocs.simple_writer import SimpleWriter
-from bdocs.simple_user import SimpleUser
 from bdocs.writer import Writer
 from bdocs.git.git_util import GitUtil
 import logging
@@ -29,10 +28,6 @@ class GitWriter(Writer):
             logging.info(f"GitWriter.write: repopath: {repopath}")
             try:
                 repo.stage([repopath])
-                user = self._metadata.user
-                if user is None:
-                    user = SimpleUser("anonymous")
-                logging.info(f"GitWriter.write: doing user commit")
                 commit_id = repo.do_commit(b"GitWriter autocommit")  #, committer=b"test")
                 logging.info(f"GitWriter: after commit: commit_id: {commit_id}")
             except Exception as e:

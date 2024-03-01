@@ -6,15 +6,13 @@ from cdocs.contextual_docs import FilePath, DocPath, Doc, JsonDict
 from cdocs.context_metadata import ContextMetadata
 from bdocs.bdocs_config import BdocsConfig
 from cdocs.config import Config
-from bdocs.user import User
 import logging
 
 
 class BuildingMetadata(ContextMetadata):
 
-    def __init__(self, config:Optional[Config]=None, user:Optional[User]=None) -> None:
+    def __init__(self, config:Optional[Config]=None) -> None:
         super().__init__(config)
-        self._user = user
         self._features = {_[0]:[s for s in _[1].split(",")] for _ in self.config.get_items("features")}
         logging.info(f"BuildingMetadata.__init__: features: {self.features}")
         self._offers_feature = dict()
@@ -49,10 +47,6 @@ class BuildingMetadata(ContextMetadata):
     @property
     def features(self) -> Dict[str,List[str]]:
         return self._features
-
-    @property
-    def user(self) -> User:
-        return self._user
 
     def get_root_info(self, rootname:str) -> JsonDict:
         if self.keyed_roots[rootname] is None:
