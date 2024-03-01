@@ -2,12 +2,13 @@ import abc
 from cdocs.contextual_docs import FilePath
 import os
 import shutil
+import logging
 
 class Index(metaclass=abc.ABCMeta):
     """ implementations of Index must have self._bdocs """
 
     def _check_index(self) -> None:
-        print(f">>>>> checking index for {self}")
+        logging.info(f"Index._check_index: checking index for {self}")
         if not os.path.exists(self.get_index_root()):
             os.mkdir(self.get_index_root())
             self._assure_index()

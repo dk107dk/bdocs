@@ -1,4 +1,3 @@
-from application.app_config import AppConfig
 from bdocs.git.git_rooter import GitRooter
 from bdocs.git.git_writer import GitWriter
 from bdocs.git.git_deleter import GitDeleter
@@ -23,7 +22,7 @@ class GitTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         print("setting up GitTests")
-        AppConfig.setTesting()
+        BdocsConfig.setTesting()
 
     noise = BdocsConfig().get("testing", "GitTests_noise") == "on"
     def _print(self, text:str) -> None:

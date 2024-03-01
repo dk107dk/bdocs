@@ -5,6 +5,7 @@ from bdocs.building_metadata import BuildingMetadata
 from cdocs.cdocs import BadDocPath
 import logging
 from typing import Union
+from pathlib import Path
 
 class SimpleWriter(Writer):
 
@@ -20,7 +21,7 @@ class SimpleWriter(Writer):
         try:
             head,tail = os.path.split(filepath)
             if not os.path.exists(head):
-                os.mkdir(head)
+                Path(head).mkdir(parents=True, exist_ok=True)
             with open(filepath, 'wb') as f:
                 f.write(content)
         except FileNotFoundError as e:

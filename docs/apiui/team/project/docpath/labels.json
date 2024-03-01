@@ -1,0 +1,15 @@
+{
+   "docpath": "DocPath",
+   "docroot": "DocRoot",
+   "filepath": "FilePath",
+   "docs": "Docs",
+   "labels":"Labels",
+   "tokens":"Tokens",
+   "labels_description": "Labels are JSON files that contain a dictionary of variables to user facing words or phrases",
+   "tokens_description": "Tokens are JSON files that contain a dictionary of variables to user facing words or phrases. They are intended to be incorporated into labels and docs as template variables.",
+   "docpath_description": "A path that is used by Cdocs. It starts with an optional '/' and lives on the file system below a DocRoot",
+   "docroot_description": "A named location on the filesystem that Cdocs uses to store documents.",
+   "filepath_description": "A normal file system path.",
+   "cdocs": "The word 'cdocs' is used to identify a root that uses DocPath.",
+   "doc": "wheee!"
+}

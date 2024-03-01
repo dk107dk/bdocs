@@ -70,13 +70,15 @@ class Bdocs(BuildingDocs):
 
     @property
     def root_name(self):
-        i = self.docs_root.rindex("/")
-        return self.docs_root[i+1:]
+        #i = self.docs_root.rindex("/")
+        #return self.docs_root[i+1:]
+        return self.config.get_matching_key_for_value("docs", self.docs_root)
 
     @property
     def docs_root(self):
         return self._docs_root
-    def get_doc_root(self): # matches Cdocs
+
+    def get_doc_root(self): # this method matches Cdocs
         return self.docs_root
 
     @property

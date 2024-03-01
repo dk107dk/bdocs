@@ -38,7 +38,7 @@ class Block(MultiBuildingDocs):
 #-------------
 
     def get_root(self, rootname:str) -> Bdocs:
-        return self._keyed_bdocs[rootname]
+        return self._keyed_bdocs.get(rootname)
 
     def unzip_doc_tree(self, zipfile:FilePath) -> None:
         if not os.path.exists(zipfile):
@@ -76,7 +76,10 @@ class Block(MultiBuildingDocs):
         treelist = []
         if len(rootnames) == 1:
             bdocs = self.get_root(rootnames[0])
+            if bdocs is None:
+                logging.info(f"Block.list_trees: rootnames[0]: {rootnames[0]} not found")
             tree = bdocs.get_doc_tree()
+            logging.info(f"Block.list_trees: tree for rootname: {rootnames[0]}: {tree}")
             treelist = self._tree_to_list(tree, [], [rootnames[0]] if add_root_names else [] )
         else:
             for root in rootnames:

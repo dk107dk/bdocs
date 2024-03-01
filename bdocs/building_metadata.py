@@ -70,8 +70,10 @@ class BuildingMetadata(ContextMetadata):
             root_info.git = False
             root_info.transform = False
             root_info.edit_cdocs_json = False
+            root_info.public = True
+            root_info.rules = False
         else:
-            fs = features.split(",")
+            fs = self.features[rootname] #features.split(",")
             if "search" in fs:
                 root_info.search = True
             if "git" in fs:
@@ -80,7 +82,7 @@ class BuildingMetadata(ContextMetadata):
                 root_info.edit_cdocs_json = True
             if "transform" in fs:
                 root_info.transform = True
-        root_info.features = features
+        root_info.features = self.features[rootname]
         root_info.name = rootname
         return root_info
 

@@ -1,4 +1,3 @@
-from application.app_config import AppConfig
 import unittest
 from bdocs.building_metadata import BuildingMetadata
 from bdocs.bdocs_config import BdocsConfig
@@ -19,7 +18,7 @@ class SearchTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         print("setting up SearchTests")
-        AppConfig.setTesting()
+        BdocsConfig.setTesting()
 
 
     noise = BdocsConfig().get("testing", "SearchTests_noise") == "on"
@@ -80,13 +79,14 @@ class SearchTests(unittest.TestCase):
             print(f"SearchTests.test_index: metadata: {doc}")
         self.assertEqual( len(docs), 1, msg=f"number of docs found must be 1, not {len(docs)} was last run successful?")
 
-        bdocs.delete_doc(docpath)
-        doc = cdocs.get_doc(docpath)
-        self.assertIsNone(doc, msg=f"{doc} must be none")
+        if True:
+            bdocs.delete_doc(docpath)
+            doc = cdocs.get_doc(docpath)
+            self.assertIsNone(doc, msg=f"{doc} must be none")
 
-        docs = bdocs.searcher.find_docs(query)
-        print(f"SearchTests.test_index: find: the query returned {docs}")
-        self.assertEqual(len(docs), 0, msg=f"query must return nothing")
+            docs = bdocs.searcher.find_docs(query)
+            print(f"SearchTests.test_index: find: the query returned {docs}")
+            self.assertEqual(len(docs), 0, msg=f"query must return nothing")
 
         if True:
             bdocs.delete_root()

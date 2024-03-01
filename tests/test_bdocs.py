@@ -1,4 +1,3 @@
-from application.app_config import AppConfig
 from bdocs.bdocs import Bdocs
 from bdocs.bdocs_config import BdocsConfig
 from bdocs.printer import Printer
@@ -24,7 +23,7 @@ class BdocsTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         print("setting up BdocsTests")
-        AppConfig.setTesting()
+        BdocsConfig.setTesting()
 
     def _debug(self):
         self.logger.setLevel(level=logging.DEBUG)
@@ -130,8 +129,8 @@ class BdocsTests(unittest.TestCase):
         doc = cdocs.get_doc(HOME)
         self.assertIsNone(doc, msg=f"{doc} must be none")
 
-    def test_delete_dir(self):
-        self._print(f"BdocsTests.test_delete_dir")
+    def test_delete_dir_tree(self):
+        self._print(f"BdocsTests.test_delete_dir_tree")
         if self.off(): return
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH, metadata)
@@ -148,6 +147,33 @@ class BdocsTests(unittest.TestCase):
         self.assertEqual(b, False, msg=f'{filepath} must not exist')
         #self._warning()
 
+
+    def test_delete_dir(self):
+        self._print(f"BdocsTests.test_delete_dir")
+        if self.off(): return
+        metadata = BuildingMetadata()
+        bdocs = Bdocs(PATH, metadata)
+        cdocs = Cdocs(PATH)
+        filepath = bdocs.get_dir_for_docpath(HOME)
+        apath = filepath + "/deleteme"
+        os.mkdir(apath)
+        bdocs.delete_doc(HOME+"/deleteme")
+        filepath = bdocs.get_dir_for_docpath(HOME+"/deleteme")
+        b = os.path.exists(filepath)
+        self.assertEqual(b, False, msg=f'{filepath} must not exist')
+
+
+    #
+    # TODO: I'm seeing a problem in the rules tests where a
+    #    ['.public_rules/app/home/home.rule', '.public_rules/app/home/test.rule']
+    # result is coming from a doc folder like:
+    # .public_rules/app/home:
+    #                   home.rule
+    #                   home/test.rule
+    #
+    # app/home/test.rule is correct
+    # app/home/home.rule is wrong. it should be app/home.rule. at least I think so.
+    #
     def test_get_doc_tree(self):
         self._print(f"BdocsTests.test_get_doc_tree")
         if self.off(): return

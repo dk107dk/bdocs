@@ -1,16 +1,14 @@
-from application.app_config import AppConfig
 import unittest
 from cdocs.context import ContextMetadata
 from bdocs.bdocs_config import BdocsConfig
 from bdocs.building_metadata import BuildingMetadata
-# RootInfo
 
 class MetadataTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
         print("setting up MetadataTests")
-        AppConfig.setTesting()
+        BdocsConfig.setTesting()
 
     noise = BdocsConfig().get("testing", "MetadataTests_noise") == "on"
     def _print(self, text:str) -> None:
@@ -34,7 +32,7 @@ class MetadataTests(unittest.TestCase):
         features = metadata.features.get("public")
         self.assertIsNotNone(features, msg=f"features of 'public' must not be None")
         #search,git,transform
-        self.assertEqual( len(features), 3, msg=f"'public' must have 3 features, not {len(features)}")
+        self.assertEqual( len(features), 4, msg=f"'public' must have 4 features, not {len(features)}")
 
         features = metadata.features.get("json")
         self._print(f"MetadataTests.test_root_info: features of json: {features}")

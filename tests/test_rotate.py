@@ -1,4 +1,3 @@
-from application.app_config import AppConfig
 from bdocs.simple_rotater import SimpleRotater
 import unittest
 import os
@@ -15,7 +14,7 @@ class RotateTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         print("setting up RotateTests")
-        AppConfig.setTesting()
+        BdocsConfig.setTesting()
 
     noise = BdocsConfig().get("testing", "RotateTests_noise") == "on"
     def _print(self, text:str) -> None:

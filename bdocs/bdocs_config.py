@@ -1,10 +1,21 @@
 from cdocs.simple_config import SimpleConfig
 import logging
+from typing import Any,Optional
 
 class BdocsConfig(SimpleConfig):
 
-    def add_to_config(self, section, key, value) -> None:
-        self.just_add_to_config(section, key, value)
+    def add_to_config(self, section, key, value:Optional[Any]=None, concat:str=',') -> None:
+        """ adding None removes key """
+        print(f"BdocsConfig.add_to_config: section: {section}, key: {key}, value: {value}, concat: {concat}")
+        if value is None:
+            self.remove_from_config(section, key)
+        else:
+            t = type(value).__name__
+            print(f"BdocsConfig.add_to_config: type t: {t}")
+            if t == "list":
+                value = concat.join(value)
+                print(f"BdocsConfig.add_to_config: joined {t} to make: {value}")
+            self.just_add_to_config(section, key, value)
         self.save_config()
 
     def just_add_to_config(self, section, key, value) -> None:
@@ -23,7 +34,14 @@ class BdocsConfig(SimpleConfig):
         else:
             self._parser.remove_section(section)
         self.save_config()
-        #with open(self.get_config_path(), 'w') as f:
-        #    self._parser.write(f)
 
+    def get_ur_root_path(self):
+        if BdocsConfig.testing:
+            return self.get("test", "root")
+        else:
+            return self.get("ur", "root")
+
+    @classmethod
+    def setTesting(cls):
+        cls.testing = True
 

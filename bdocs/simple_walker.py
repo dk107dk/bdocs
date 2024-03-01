@@ -14,7 +14,8 @@ class SimpleWalker(Walker):
     # can't type hint Bdocs on the bdocs arg because it would
     # be a circular import ref.
     def get_doc_tree(self) -> JsonDict:
-        filepath = self._bdocs.get_dir_for_docpath("/")
+        filepath = self._bdocs.docs_root
+        logging.debug(f"SimpleWalker.get_doc_tree: filepath: {filepath}")
         jsondict = JsonDict(dict())
         if not os.path.isdir(filepath):
             raise BadDocPath(f"{filepath} is not a root directory")

@@ -1,4 +1,3 @@
-from application.app_config import AppConfig
 from bdocs.bdocs_config import BdocsConfig
 from bdocs.tree_util import TreeUtil
 import unittest
@@ -8,7 +7,7 @@ class TreeUtilTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         print("setting up TreeUtilTests")
-        AppConfig.setTesting()
+        BdocsConfig.setTesting()
 
     noise = BdocsConfig().get("testing", "TreeUtilTests_noise") == "on"
     def _print(self, text:str) -> None:

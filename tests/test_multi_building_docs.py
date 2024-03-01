@@ -1,4 +1,3 @@
-from application.app_config import AppConfig
 from bdocs.tree_util import TreeUtil
 import unittest
 from bdocs.multi_building_docs import MultiBuildingDocs
@@ -18,7 +17,7 @@ class BlockTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         print("setting up BlockTests")
-        AppConfig.setTesting()
+        BdocsConfig.setTesting()
 
 
     noise = BdocsConfig().get("testing", "BlockTests_noise") == "on"
