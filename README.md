@@ -1,4 +1,7 @@
 # Bdocs
+
+### *** Bdocs is a hobby. It is not published. Don't use it in production ***
+
 ## Write, copy, delete functions and high level features on top of Cdocs
 
 Cdocs is a contextual help framework. It is read-only. Bdocs is an overlay to Cdocs. It adds the ability to interact with Cdocs roots.
