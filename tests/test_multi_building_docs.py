@@ -9,8 +9,7 @@ from bdocs.building_metadata import BuildingMetadata
 import shutil
 import os
 
-BASE:FilePath = "/Users/davidkershaw/dev/bdocs/server"
-PATH:FilePath = BASE + "/docs/example"
+PATH:FilePath = "docs/example"
 
 class BlockTests(unittest.TestCase):
 
@@ -34,12 +33,12 @@ class BlockTests(unittest.TestCase):
         if self._off(): return
         metadata = BuildingMetadata(config)
         building = Block(metadata)
-        shutil.copyfile(BASE+"/tests/test_resources/test.zip", BASE+"/tests/test_resources/____.zip" )
-        building.unzip_doc_tree( BASE+"/tests/test_resources/____.zip" )
-        b = os.path.exists( BASE + "/docs/test")
-        self.assertEqual(b, True, msg=f'{BASE + "/docs/test"} must exist')
+        shutil.copyfile("tests/test_resources/test.zip", "tests/test_resources/____.zip" )
+        building.unzip_doc_tree( "tests/test_resources/____.zip" )
+        b = os.path.exists( "docs/test")
+        self.assertEqual(b, True, msg=f'{"docs/test"} must exist')
         if b:
-            shutil.rmtree(BASE + "/docs/test")
+            shutil.rmtree("docs/test")
             config.remove_from_config("docs", "test")
 
     def test_join(self):

@@ -9,7 +9,7 @@ from bdocs.searcher import Query
 from bdocs.search.index_doc import IndexDoc
 import os
 
-PATH = "/Users/davidkershaw/dev/bdocs/server/docs"
+PATH = "docs"
 ROOTNAME = "search_test"
 ROOT = PATH + "/" + ROOTNAME
 

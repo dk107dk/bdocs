@@ -7,7 +7,7 @@ from bdocs.bdocs import Bdocs
 from bdocs.bdocs_config import BdocsConfig
 from cdocs.contextual_docs import FilePath
 
-BASE:FilePath = "/Users/davidkershaw/dev/bdocs/server"
+BASE:FilePath = "."
 
 class RotateTests(unittest.TestCase):
 

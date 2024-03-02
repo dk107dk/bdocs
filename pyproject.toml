@@ -1,7 +1,7 @@
 [tool.poetry]
 name = "bdocs"
 version = "0.0.0.1"
-description = "A library to provide mutation methods and higher level features to Cdocs."
+description = "A library to provide modify methods and higher features to Cdocs."
 authors = ["David Kershaw <dk107dk@hotmail.com>"]
 readme = "README.md"
 classifiers = [
@@ -15,6 +15,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.12"
+cdocs = "^0.0.39"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.4.4"
@@ -22,7 +23,7 @@ flake8 = "^7.0.0"
 black = "^23.12.1"
 mypy = "^1.8.0"
 pre-commit = "^3.6.0"
-cdocs = "^0.0.39"
+#cdocs = "^0.0.39"
 dulwich = "^0.21.7"
 whoosh = "^2.7.4"
 

@@ -13,7 +13,7 @@ import unittest
 from dulwich.objects import Blob
 import time
 
-PATH = "/Users/davidkershaw/dev/bdocs/server/docs"
+PATH = "docs"
 ROOTNAME = "git_test"
 ROOT = PATH + "/" + ROOTNAME
 
@@ -166,8 +166,8 @@ class GitTests(unittest.TestCase):
         fileutil = FileUtil( metadata, bdocs )
         filepaths = fileutil.get_file_names(filepath)
         self._print(f"GitTests.test_delete: filepaths: {filepaths}")
-        self.assertIn('/Users/davidkershaw/dev/bdocs/server/docs/git/app/git_test/fish.xml', \
-                       filepaths, msg=f"must have '/Users/davidkershaw/dev/bdocs/server/docs/git/app/git_test/fish.xml'")
+        self.assertIn('docs/git/app/git_test/fish.xml', \
+                       filepaths, msg=f"must have 'docs/git/app/git_test/fish.xml'")
         #
         # do the delete
         #

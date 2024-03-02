@@ -10,9 +10,8 @@ import os
 import shutil
 import logging
 
-BASE:FilePath = "/Users/davidkershaw/dev/bdocs/server"
-PATH:FilePath = BASE + "/docs/example"
-TMP:FilePath = BASE + "/tmp"
+PATH:FilePath = "docs/example"
+TMP:FilePath = "tmp"
 HOME:DocPath = "/app/home"
 
 

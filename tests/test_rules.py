@@ -10,7 +10,7 @@ from bdocs.rules.rule_types import RuleTypes
 import os
 from datetime import datetime, timedelta
 
-PATH = "/Users/davidkershaw/dev/bdocs/server/docs"
+PATH = "docs"
 ROOTDIR = "example"
 ROOTNAME = "public"
 ROOT = PATH + "/" + ROOTDIR
