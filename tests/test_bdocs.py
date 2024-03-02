@@ -9,13 +9,11 @@ import unittest
 import os
 import shutil
 import logging
+import inspect
 
 PATH:FilePath = "docs/example"
 TMP:FilePath = "tmp"
 HOME:DocPath = "/app/home"
-
-
-import inspect
 
 class BdocsTests(unittest.TestCase):
 
@@ -24,31 +22,9 @@ class BdocsTests(unittest.TestCase):
         print("setting up BdocsTests")
         BdocsConfig.setTesting()
 
-    def _debug(self):
-        self.logger.setLevel(level=logging.DEBUG)
-        self.logger.debug("SET THE LEVEL TO DEBUG")
-
-    def _warning(self):
-        self.logger.setLevel(level=logging.WARNING)
-        self.logger.warning("SET THE LEVEL TO WARNING")
-
-    logger = logging.getLogger('')
-
-    noise = BdocsConfig().get("testing", "BdocsTests_noise") == "on"
-    def _print(self, text:str) -> None:
-        if self.noise:
-            print(text)
-
-    def off(self) -> bool:
-        return BdocsConfig().get("testing", "BdocsTests") == "off"
-
-    ###################
-    # tests
-    ###################
 
     def test_zip_doc_tree(self):
-        self._print(f"BdocsTests.test_zip_doc_tree")
-        if self.off(): return
+        logging.info(f"BdocsTests.test_zip_doc_tree")
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH, metadata)
         azip = bdocs.zip_doc_tree()
@@ -58,8 +34,7 @@ class BdocsTests(unittest.TestCase):
             os.remove(azip)
 
     def test_move_doc(self):
-        self._print(f"BdocsTests.test_move_doc")
-        if self.off(): return
+        logging.info(f"BdocsTests.test_move_doc")
         cdocs = Cdocs(PATH)
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH, metadata)
@@ -80,8 +55,7 @@ class BdocsTests(unittest.TestCase):
         self.assertIsNone(doc, msg=f"{doc} at {todoc} must be none")
 
     def test_copy_doc(self):
-        self._print(f"BdocsTests.test_copy_doc")
-        if self.off(): return
+        logging.info(f"BdocsTests.test_copy_doc")
         cdocs = Cdocs(PATH)
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH, metadata)
@@ -105,18 +79,16 @@ class BdocsTests(unittest.TestCase):
         self.assertIsNone(doc, msg=f"{doc} at {fromdoc} must be none")
 
     def test_get_doc_root_path(self):
-        self._print(f"BdocsTests.test_get_doc_root_path")
-        if self.off(): return
+        logging.info(f"BdocsTests.test_get_doc_root_path")
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH, metadata)
         path = bdocs.get_docs_root()
-        self._print(f"test_get_doc_root_path: docs root is {path}")
+        logging.info(f"test_get_doc_root_path: docs root is {path}")
         self.assertTrue( os.path.exists(path), msg="docs root must exsit" )
         self.assertEqual(path, PATH)
 
     def test_put_and_delete_doc(self):
-        self._print(f"BdocsTests.test_put_and_delete_doc")
-        if self.off(): return
+        logging.info(f"BdocsTests.test_put_and_delete_doc")
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH, metadata)
         home = "I'm home!"
@@ -129,12 +101,10 @@ class BdocsTests(unittest.TestCase):
         self.assertIsNone(doc, msg=f"{doc} must be none")
 
     def test_delete_dir_tree(self):
-        self._print(f"BdocsTests.test_delete_dir_tree")
-        if self.off(): return
+        logging.info(f"BdocsTests.test_delete_dir_tree")
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH, metadata)
         cdocs = Cdocs(PATH)
-        #self._debug()
         filepath = bdocs.get_dir_for_docpath(HOME)
         apath = filepath + "/deleteme"
         os.mkdir(apath)
@@ -144,12 +114,9 @@ class BdocsTests(unittest.TestCase):
         filepath = bdocs.get_dir_for_docpath(HOME+"/deleteme")
         b = os.path.exists(filepath)
         self.assertEqual(b, False, msg=f'{filepath} must not exist')
-        #self._warning()
-
 
     def test_delete_dir(self):
-        self._print(f"BdocsTests.test_delete_dir")
-        if self.off(): return
+        logging.info(f"BdocsTests.test_delete_dir")
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH, metadata)
         cdocs = Cdocs(PATH)
@@ -174,8 +141,7 @@ class BdocsTests(unittest.TestCase):
     # app/home/home.rule is wrong. it should be app/home.rule. at least I think so.
     #
     def test_get_doc_tree(self):
-        self._print(f"BdocsTests.test_get_doc_tree")
-        if self.off(): return
+        logging.info(f"BdocsTests.test_get_doc_tree")
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH + '/app/home/teams/todos', metadata)
         tree = bdocs.get_doc_tree()
@@ -183,8 +149,7 @@ class BdocsTests(unittest.TestCase):
         self.assertEqual( len(tree), 3, msg=f'tree must have three keys: {tree}')
 
     def test_get_docs_with_titles(self):
-        self._print(f"BdocsTests.test_get_docs_with_titles")
-        if self.off(): return
+        logging.info(f"BdocsTests.test_get_docs_with_titles")
         #
         # this test is currently broken. the feature is currently not got a
         # clear use case. and it isn't finished as originally conceived. so
@@ -197,7 +162,7 @@ class BdocsTests(unittest.TestCase):
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH, metadata)
         docs:doc[str,DocPath] = bdocs.get_docs_with_titles("/app/home/teams/todos/assignee")
-        self._print(f"test_get_docs_with_titles: all labeled docs: {docs}")
+        logging.info(f"test_get_docs_with_titles: all labeled docs: {docs}")
         self.assertEqual(len(docs), 4, msg=f'docs must have four docpath with titles: {docs}')
         found_app = False
         found_assignee = False

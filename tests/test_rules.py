@@ -9,6 +9,7 @@ from bdocs.rules.rule import Rule
 from bdocs.rules.rule_types import RuleTypes
 import os
 from datetime import datetime, timedelta
+import logging
 
 PATH = "docs"
 ROOTDIR = "example"
@@ -23,29 +24,20 @@ class RulesTests(unittest.TestCase):
         print("setting up RulesTests")
         BdocsConfig.setTesting()
 
-    noise = BdocsConfig().get("testing", "RulesTests_noise") == "on"
-    def _print(self, text:str) -> None:
-        if self.noise:
-            print(text)
-
-    def _off(self):
-        return BdocsConfig().get("testing", "RulesTests") == "off"
 
     def test_rules_feature(self):
-        self._print(f"RulesTests.test_rules_feature")
-        if self._off(): return
+        logging.info(f"RulesTests.test_rules_feature")
         metadata = BuildingMetadata()
         rootinfo = metadata.get_root_info(ROOTNAME)
         self.assertEqual(True, rootinfo.rules, msg=f"root {ROOTNAME} must have rules feature")
 
     def test_rules_root_dir(self):
-        self._print(f"RulesTests.test_rules_feature")
-        if self._off(): return
+        logging.info(f"RulesTests.test_rules_feature")
         metadata = BuildingMetadata()
         cdocs = Cdocs(ROOT, metadata.config)
         rules = Rules(cdocs)
         rulesroot = rules.get_rules_root()
-        self._print(f"RulesTests.test_rules_root_dir: rulesroot: {rulesroot}")
+        logging.info(f"RulesTests.test_rules_root_dir: rulesroot: {rulesroot}")
         apath = f"{metadata.config.get('locations', 'docs_dir')}{os.sep}.{cdocs.rootname}_rules"
         exists = os.path.exists( apath )
         self.assertEqual(True, exists, msg=f"the rules directory for {ROOT} named {cdocs.rootname} must exist at {apath}")
@@ -54,8 +46,7 @@ class RulesTests(unittest.TestCase):
         self.assertEqual(False, exists, msg=f"the rules directory must nolonger exist at {apath}")
 
     def test_rule_types(self):
-        self._print(f"RulesTests.test_rules_from_to")
-        if self._off(): return
+        logging.info(f"RulesTests.test_rules_from_to")
         self.assertEqual(RuleTypes.REPLACE_AFTER.value, "replace_after",
                          msg=f"rule type 'RuleTypes.REPLACE.value' must be 'replace'")
 
@@ -63,37 +54,36 @@ class RulesTests(unittest.TestCase):
     # this test does nothing meaningful so I'm disabling it
     #
     def test_rules_from_to_action(self):
-        self._print(f"RulesTests.test_rules_from_to_action")
+        logging.info(f"RulesTests.test_rules_from_to_action")
         if self._off(): return
         metadata = BuildingMetadata()
         cdocs = Cdocs(ROOT, metadata.config)
         rules = Rules(cdocs)
-        self._print(f"RulesTests.test_rules_from_to_action: rules: {rules}")
+        logging.info(f"RulesTests.test_rules_from_to_action: rules: {rules}")
         rule = rules.new_rule()
-        self._print(f"RulesTests.test_rules_from_to_action: rule: {rule}")
+        logging.info(f"RulesTests.test_rules_from_to_action: rule: {rule}")
         at = datetime.now()
         rule.start_at = at
         self.assertEqual(True, rule.has_start_at(), msg=f"the rule must have a start_at")
         rule.to = at
         self.assertEqual(True, rule.has_to(), msg=f"the rule must have a to")
         rule.action = RuleTypes.SWAP
-        self._print(f"RulesTests.test_rules_from_to_action: rule.action: {rule.action}")
+        logging.info(f"RulesTests.test_rules_from_to_action: rule.action: {rule.action}")
         self.assertEqual("swap", rule.action.value, msg=f"the rule must have action 'swap', not {rule.action}")
     """
 
     def test_rule_started_ended_happening(self):
-        self._print(f"RulesTests.test_rule_started_ended_happening")
-        if self._off(): return
+        logging.info(f"RulesTests.test_rule_started_ended_happening")
         metadata = BuildingMetadata()
         cdocs = Cdocs(ROOT, BdocsConfig())
         rules = Rules(cdocs)
-        self._print(f"RulesTests.test_rule_started_ended_happening: rules: {rules}")
+        logging.info(f"RulesTests.test_rule_started_ended_happening: rules: {rules}")
         rule = rules.new_rule()
-        self._print(f"RulesTests.test_rule_started_ended_happening: rule: {rule}")
+        logging.info(f"RulesTests.test_rule_started_ended_happening: rule: {rule}")
         at = datetime.now()
-        self._print(f"RulesTests.test_rule_started_ended_happening: now: {at}")
+        logging.info(f"RulesTests.test_rule_started_ended_happening: now: {at}")
         at = datetime(at.year, at.month, at.day, at.hour, at.minute -1, 10)
-        self._print(f"RulesTests.test_rule_started_ended_happening: start at: {at}")
+        logging.info(f"RulesTests.test_rule_started_ended_happening: start at: {at}")
         rule.start_at = at
         started = rule.has_started()
         self.assertEqual(True, started, msg=f"the rule must have started")
@@ -102,7 +92,7 @@ class RulesTests(unittest.TestCase):
         happening = rule.is_happening()
         self.assertEqual(True, happening, msg=f"the rule must be happening")
         at = datetime(at.year, at.month, at.day, at.hour, at.minute, 5 )
-        self._print(f"RulesTests.test_rule_started_ended_happening: end at: {at}")
+        logging.info(f"RulesTests.test_rule_started_ended_happening: end at: {at}")
         rule.to = at
         started = rule.has_started()
         self.assertEqual(True, started, msg=f"the rule must have started")
@@ -112,16 +102,15 @@ class RulesTests(unittest.TestCase):
         self.assertEqual(False, happening, msg=f"the rule must not be happening")
 
     def test_run_rule(self):
-        self._print(f"RulesTests.test_run_rule")
-        if self._off(): return
+        logging.info(f"RulesTests.test_run_rule")
         metadata = BuildingMetadata()
         cdocs = Cdocs(ROOT, metadata.config)
         rules = Rules(cdocs)
-        self._print(f"RulesTests.test_run_rule: rules: {rules}")
+        logging.info(f"RulesTests.test_run_rule: rules: {rules}")
         rule = rules.new_rule()
         rule.docpath = RULE
         rule.action = RuleTypes.AVAILABLE_DURING
-        self._print(f"test_run_rule: rule.action class: {rule.action.__class__}")
+        logging.info(f"test_run_rule: rule.action class: {rule.action.__class__}")
         n = datetime.now()
         n2 = n + timedelta(days=1)
         n = n + timedelta(days=-1)
@@ -130,7 +119,7 @@ class RulesTests(unittest.TestCase):
         rules.put_rule(rule)
         rule = rules.get_rule('/app/home')
         self.assertIsNotNone(rule, msg=f"rule_1: {RULE} must not be None")
-        self._print(f"RulesTests.test_run_rule: rule: {rule} {rule.action} {rule.action.__class__}")
+        logging.info(f"RulesTests.test_run_rule: rule: {rule} {rule.action} {rule.action.__class__}")
         assert isinstance(rule.action, RuleTypes)
         self.assertEqual(
                 RuleTypes.AVAILABLE_DURING,
@@ -139,38 +128,36 @@ class RulesTests(unittest.TestCase):
         rules.delete_rule(rule)
 
     def test_crud_rule(self):
-        self._print(f"RulesTests.test_crud_rule")
-        if self._off(): return
+        logging.info(f"RulesTests.test_crud_rule")
         path = '/app/home/test'
         metadata = BuildingMetadata()
         cdocs = Cdocs(ROOT, metadata.config)
-        self._print(f"RulesTests.test_crud_rule: ROOT: {ROOT}")
+        logging.info(f"RulesTests.test_crud_rule: ROOT: {ROOT}")
         rules = Rules(cdocs)
-        self._print(f"RulesTests.test_crud_rule: rules: {rules}")
+        logging.info(f"RulesTests.test_crud_rule: rules: {rules}")
         rule = rules.new_rule()
         rule.docpath = path
         rule.action = RuleTypes.AVAILABLE_DURING
         rule.paths = ["/app/home","/app/fish"]
         rule.start_at = datetime.now()
         rule.to = datetime.now()
-        self._print(f"RulesTests.test_crud_rule: rule: {rule}")
+        logging.info(f"RulesTests.test_crud_rule: rule: {rule}")
         string = rule.to_string()
         rules.put_rule(rule)
         rule = rules.get_rule(path)
         self.assertIsNotNone(rule, msg=f"rule must not be None")
         string2 = rule.to_string()
-        self._print(f"RulesTests.test_crud_rule: string : {string}")
-        self._print(f"RulesTests.test_crud_rule: string2: {string2}\n")
+        logging.info(f"RulesTests.test_crud_rule: string : {string}")
+        logging.info(f"RulesTests.test_crud_rule: string2: {string2}\n")
         self.assertEqual(string, string2, msg=f"rule: {rule}: string: {string}, string2: {string2} must be equal")
         rules.delete_rule(rule)
-        self._print(f"RulesTests.test_crud_rule: deleted rule")
+        logging.info(f"RulesTests.test_crud_rule: deleted rule")
         rule = rules.get_rule(path)
         self.assertIsNone(rule, msg=f"rule must be None")
 
 
     def test_list_rules(self):
-        self._print(f"RulesTests.test_list_rules")
-        if self._off(): return
+        logging.info(f"RulesTests.test_list_rules")
         path = '/app/home/test'
         metadata = BuildingMetadata()
         cdocs = Cdocs(ROOT, metadata.config)
@@ -181,7 +168,7 @@ class RulesTests(unittest.TestCase):
         rules.delete_rules_root()
         rules = Rules(cdocs)
 
-        self._print(f"RulesTests.test_list_rules: rules: {rules}")
+        logging.info(f"RulesTests.test_list_rules: rules: {rules}")
         rule = rules.new_rule()
         rule.docpath = path
         rule.action = RuleTypes.AVAILABLE_DURING
@@ -194,7 +181,7 @@ class RulesTests(unittest.TestCase):
         found1 = False
         found2 = False
         for path in rs:
-            self._print(f"RulesTests.test_list_rules: a path: {path}")
+            logging.info(f"RulesTests.test_list_rules: a path: {path}")
             #
             # why would we expect to find an html doc in the rules rdoc?
 
@@ -206,14 +193,13 @@ class RulesTests(unittest.TestCase):
         self.assertEqual(1, len(rs), msg=f"must be 1 rule in {rs}")
         self.assertEqual( True, ".public_rules/app/home/test.rule" in rs, msg=f".public_rules/app/home/test.rule not in {rs}")
         rules.delete_rule(rule)
-        self._print(f"RulesTests.test_list_rules: deleted rule")
+        logging.info(f"RulesTests.test_list_rules: deleted rule")
         rule = rules.get_rule(path)
         self.assertIsNone(rule, msg=f"rule must be None")
 
 
     def test_work_the_rule(self):
-        self._print(f"RulesTests.test_work_the_rule")
-        if self._off(): return
+        logging.info(f"RulesTests.test_work_the_rule")
         path = '/app/home'
         yesterday = datetime.now() + timedelta(days=-1)
         tomorrow = datetime.now() + timedelta(days=1)
@@ -228,14 +214,14 @@ class RulesTests(unittest.TestCase):
             f.write("this is home")
 
         rules = Rules(cdocs)
-        self._print(f"RulesTests.test_work_the_rule: rules: {rules}")
+        logging.info(f"RulesTests.test_work_the_rule: rules: {rules}")
         rule = rules.new_rule()
         rule.docpath = path
         rule.action = RuleTypes.AVAILABLE_DURING
         rule.paths = ["/app/home/teams/todos","/app/home/teams/todos/assignee"]
         rule.start_at = yesterday
         rule.to = tomorrow
-        self._print(f"RulesTests.test_work_the_rule: rule: {rule}")
+        logging.info(f"RulesTests.test_work_the_rule: rule: {rule}")
         #
         # AVAILABLE_DURING
         #

@@ -12,6 +12,7 @@ import os
 import unittest
 from dulwich.objects import Blob
 import time
+import logging
 
 PATH = "docs"
 ROOTNAME = "git_test"
@@ -24,17 +25,8 @@ class GitTests(unittest.TestCase):
         print("setting up GitTests")
         BdocsConfig.setTesting()
 
-    noise = BdocsConfig().get("testing", "GitTests_noise") == "on"
-    def _print(self, text:str) -> None:
-        if self.noise:
-            print(text)
-
-    def _off(self):
-        return BdocsConfig().get("testing", "GitTests") == "off"
-
     def test_init(self):
-        self._print(f"GitTests.test_init")
-        if self._off(): return
+        logging.info(f"GitTests.test_init")
         metadata = BuildingMetadata()
         bdocs = Bdocs(ROOT)
         if not os.path.exists(bdocs.docs_root):
@@ -51,8 +43,7 @@ class GitTests(unittest.TestCase):
         self.assertEqual(exist, False, msg=f"new root at {bdocs.docs_root} must no longer exist")
 
     def test_put(self):
-        self._print(f"GitTests.test_put")
-        if self._off(): return
+        logging.info(f"GitTests.test_put")
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH + "/git", metadata)
         git_rooter = GitRooter(metadata, bdocs)
@@ -79,8 +70,7 @@ class GitTests(unittest.TestCase):
             self.assertEqual(exist, False, msg=f"new root at {bdocs.docs_root} must no longer exist")
 
     def test_put_put(self):
-        self._print(f"GitTests.test_put_put")
-        if self._off(): return
+        logging.info(f"GitTests.test_put_put")
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH + "/git", metadata)
         git_rooter = GitRooter(metadata, bdocs)
@@ -95,14 +85,14 @@ class GitTests(unittest.TestCase):
         #
         # write. sleep to help make the walker entries more clear.
         #
-        self._print(f"GitTests.test_put_put....sleeping....\n")
+        logging.info(f"GitTests.test_put_put....sleeping....\n")
         time.sleep(.5)
         #
         # second write
         #
         doctext2 = "adding more to git"
         bdocs.put_doc("/app/git_test", doctext2 )
-        self._print(f"GitTests.test_put_put....sleeping....\n")
+        logging.info(f"GitTests.test_put_put....sleeping....\n")
         time.sleep(.5)
         #
         # third write
@@ -111,12 +101,12 @@ class GitTests(unittest.TestCase):
         bdocs.put_doc("/app/git_test", doctext3 )
         util = GitUtil(metadata, bdocs)
         entries = util.get_log_entries(paths=[b'app/git_test.xml'])
-        self._print(f"GitTests.test_put_put: entries: {entries}")
+        logging.info(f"GitTests.test_put_put: entries: {entries}")
         content = []
         for entry in entries:
             _ = util.get_content(entry)
             content.append(_)
-            self._print(f"GitTests.test_put_put: _: {_}")
+            logging.info(f"GitTests.test_put_put: _: {_}")
         self.assertEqual(content[0]["app/git_test.xml"].decode("utf-8"), doctext3, msg=f"{content[0]} must equal {doctext3}")
         self.assertEqual(content[1]["app/git_test.xml"].decode("utf-8"), doctext2, msg=f"{content[1]} must equal {doctext2}")
         self.assertEqual(content[2]["app/git_test.xml"].decode("utf-8"), doctext, msg=f"{content[2]} must equal {doctext}")
@@ -135,8 +125,7 @@ class GitTests(unittest.TestCase):
             self.assertEqual(exist, False, msg=f"new root at {bdocs.docs_root} must no longer exist")
 
     def test_delete(self):
-        self._print(f"GitTests.test_delete")
-        if self._off(): return
+        logging.info(f"GitTests.test_delete")
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH + "/git", metadata)
         git_rooter = GitRooter(metadata, bdocs)
@@ -147,7 +136,7 @@ class GitTests(unittest.TestCase):
         bdocs.deleter = git_deleter
         if not os.path.exists(bdocs.docs_root):
             os.mkdir(bdocs.docs_root)
-            self._print(f"GitTests.test_delete: initing root: {bdocs.docs_root}")
+            logging.info(f"GitTests.test_delete: initing root: {bdocs.docs_root}")
             bdocs.init_root()
         doctext = "adding to git"
         bdocs.put_doc("/app/git_test", doctext )
@@ -157,7 +146,7 @@ class GitTests(unittest.TestCase):
         chkpath = PATH + "/git/app/git_test"
         exists = os.path.exists(chkpath)
         self.assertEqual( exists, True, msg=f"chkpath {chkpath} must exist")
-        self._print(f"GitTests.test_delete: {chkpath} exists: {exists}")
+        logging.info(f"GitTests.test_delete: {chkpath} exists: {exists}")
         self.assertEqual( exists, True, msg=f"{chkpath} must exist")
         self.assertEqual( filepath, chkpath, msg=f"filepath {filepath} must equal {chkpath}")
         #
@@ -165,7 +154,7 @@ class GitTests(unittest.TestCase):
         #
         fileutil = FileUtil( metadata, bdocs )
         filepaths = fileutil.get_file_names(filepath)
-        self._print(f"GitTests.test_delete: filepaths: {filepaths}")
+        logging.info(f"GitTests.test_delete: filepaths: {filepaths}")
         self.assertIn('docs/git/app/git_test/fish.xml', \
                        filepaths, msg=f"must have 'docs/git/app/git_test/fish.xml'")
         #
@@ -182,8 +171,7 @@ class GitTests(unittest.TestCase):
             self.assertEqual(exist, False, msg=f"new root at {bdocs.docs_root} must no longer exist")
 
     def test_move(self):
-        self._print(f"GitTests.test_move")
-        if self._off(): return
+        logging.info(f"GitTests.test_move")
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH + "/git", metadata)
         git_rooter = GitRooter(metadata, bdocs)
@@ -196,7 +184,7 @@ class GitTests(unittest.TestCase):
         bdocs.mover = git_mover
         if not os.path.exists(bdocs.docs_root):
             os.mkdir(bdocs.docs_root)
-            self._print(f"GitTests.test_move: initing root: {bdocs.docs_root}")
+            logging.info(f"GitTests.test_move: initing root: {bdocs.docs_root}")
             bdocs.init_root()
         doctext = "adding to git"
         bdocs.put_doc("/app/git_test", doctext )
@@ -204,19 +192,19 @@ class GitTests(unittest.TestCase):
         chkpath = filepath + ".xml"
         exists = os.path.exists(chkpath)
         self.assertEqual( exists, True, msg=f"chkpath {chkpath} must exist")
-        self._print(f"GitTests.test_move: {chkpath} exists: {exists}")
+        logging.info(f"GitTests.test_move: {chkpath} exists: {exists}")
         bdocs.move_doc( "/app/git_test", "/app/git_move" )
         util = GitUtil(metadata, bdocs)
-        self._print(f"GitTests.test_move: log is: {util.get_log()}")
+        logging.info(f"GitTests.test_move: log is: {util.get_log()}")
         #
         # check the remove commit
         #
-        self._print("GitTests.test_move: checking remove commit")
+        logging.info("GitTests.test_move: checking remove commit")
         entries = util.get_log_entries(paths=[b'app/git_test.xml'])
         for entry in entries:
             for change in entry.changes():
-                self._print(f"GitTests.test_move:   > new.path: {change.new.path}")
-                self._print(f"GitTests.test_move:   > old.path: {change.old.path}\n")
+                logging.info(f"GitTests.test_move:   > new.path: {change.new.path}")
+                logging.info(f"GitTests.test_move:   > old.path: {change.old.path}\n")
         self.assertIsNone( entries[0].changes()[0].new.path, msg=f"new.path must be None")
         self.assertEqual( entries[0].changes()[0].old.path, b'app/git_test.xml', msg=f"old.path must be b'app/git_test.xml'")
         self.assertIsNone( entries[1].changes()[0].old.path, msg=f"old.path must be None")
@@ -224,12 +212,12 @@ class GitTests(unittest.TestCase):
         #
         # check the move commit
         #
-        self._print("GitTests.test_move: checking move commit")
+        logging.info("GitTests.test_move: checking move commit")
         entries = util.get_log_entries(paths=[b'app/git_move.xml'])
         for entry in entries:
             for change in entry.changes():
-                self._print(f"GitTests.test_move:   > new.path: {change.new.path}")
-                self._print(f"GitTests.test_move:   > old.path: {change.old.path}\n")
+                logging.info(f"GitTests.test_move:   > new.path: {change.new.path}")
+                logging.info(f"GitTests.test_move:   > old.path: {change.old.path}\n")
         self.assertIsNone( entries[0].changes()[0].old.path, msg=f"new.path must be None")
         self.assertEqual( entries[0].changes()[0].new.path, b'app/git_move.xml', msg=f"new.path must be b'app/git_move.xml'")
         if True:
@@ -238,8 +226,7 @@ class GitTests(unittest.TestCase):
             self.assertEqual(exist, False, msg=f"new root at {bdocs.docs_root} must no longer exist")
 
     def test_copy(self):
-        self._print(f"GitTests.test_copy")
-        if self._off(): return
+        logging.info(f"GitTests.test_copy")
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH + "/git", metadata)
         git_rooter = GitRooter(metadata, bdocs)
@@ -252,7 +239,7 @@ class GitTests(unittest.TestCase):
         bdocs.mover = git_mover
         if not os.path.exists(bdocs.docs_root):
             os.mkdir(bdocs.docs_root)
-            self._print(f"GitTests.test_copy: initing root: {bdocs.docs_root}")
+            logging.info(f"GitTests.test_copy: initing root: {bdocs.docs_root}")
             bdocs.init_root()
         doctext = "adding to git"
         bdocs.put_doc("/app/git_test", doctext )
@@ -260,31 +247,31 @@ class GitTests(unittest.TestCase):
         chkpath = filepath + ".xml"
         exists = os.path.exists(chkpath)
         self.assertEqual( exists, True, msg=f"chkpath {chkpath} must exist")
-        self._print(f"GitTests.test_move: {chkpath} exists: {exists}")
+        logging.info(f"GitTests.test_move: {chkpath} exists: {exists}")
         bdocs.copy_doc( "/app/git_test", "/app/git_copy" )
         util = GitUtil(metadata, bdocs)
-        self._print(f"GitTests.test_copy: log is: {util.get_log()}")
+        logging.info(f"GitTests.test_copy: log is: {util.get_log()}")
         #
         # check the add commit
         #
-        self._print("GitTests.test_copy: checking add commit")
+        logging.info("GitTests.test_copy: checking add commit")
         entries = util.get_log_entries(paths=[b'app/git_test.xml'])
         for entry in entries:
             for change in entry.changes():
-                self._print(f"GitTests.test_copy:   > new.path: {change.new.path}")
-                self._print(f"GitTests.test_copy:   > old.path: {change.old.path}\n")
+                logging.info(f"GitTests.test_copy:   > new.path: {change.new.path}")
+                logging.info(f"GitTests.test_copy:   > old.path: {change.old.path}\n")
         self.assertEqual( len(entries), 1, msg=f"log entries for b'app/git_test.xml' must be 1")
         self.assertIsNone( entries[0].changes()[0].old.path, msg=f"old.path must be None")
         self.assertEqual( entries[0].changes()[0].new.path, b'app/git_test.xml', msg=f"new.path must be b'app/git_test.xml'")
         #
         # check the copy commit
         #
-        self._print("GitTests.test_copy: checking copy commit")
+        logging.info("GitTests.test_copy: checking copy commit")
         entries = util.get_log_entries(paths=[b'app/git_copy.xml'])
         for entry in entries:
             for change in entry.changes():
-                self._print(f"GitTests.test_copy:   > new.path: {change.new.path}")
-                self._print(f"GitTests.test_copy:   > old.path: {change.old.path}\n")
+                logging.info(f"GitTests.test_copy:   > new.path: {change.new.path}")
+                logging.info(f"GitTests.test_copy:   > old.path: {change.old.path}\n")
         self.assertEqual( len(entries), 1, msg=f"log entries for b'app/git_copy.xml' must be 1")
         self.assertIsNone( entries[0].changes()[0].old.path, msg=f"old.path must be None")
         self.assertEqual( entries[0].changes()[0].new.path, b'app/git_copy.xml', msg=f"new.path must be b'app/git_copy.xml'")
@@ -294,8 +281,7 @@ class GitTests(unittest.TestCase):
             self.assertEqual(exist, False, msg=f"new root at {bdocs.docs_root} must no longer exist")
 
     def test_tag(self):
-        self._print(f"GitTests.test_tag")
-        if self._off(): return
+        logging.info(f"GitTests.test_tag")
         metadata = BuildingMetadata()
         bdocs = Bdocs(PATH + "/git", metadata)
         git_rooter = GitRooter(metadata, bdocs)
@@ -320,7 +306,7 @@ class GitTests(unittest.TestCase):
         #
         # write. sleep to help make the walker entries more clear.
         #
-        self._print(f"GitTests.test_tag ....sleeping....\n")
+        logging.info(f"GitTests.test_tag ....sleeping....\n")
         time.sleep(.5)
         #
         # second write
@@ -329,16 +315,16 @@ class GitTests(unittest.TestCase):
         bdocs.put_doc("/app/git_test", doctext2 )
         doc = cdocs.get_doc("/app/git_test")
         self.assertEqual(doctext2, doc, msg=f"{doc} must equal {doctext2}")
-        self._print(f"GitTests.test_tag ....sleeping....\n")
+        logging.info(f"GitTests.test_tag ....sleeping....\n")
         #
         # create the tag
         #
         util = GitUtil(metadata, bdocs)
         entries = util.get_log_entries(paths=[b'app/git_test.xml'])
-        self._print(f"GitTests.test_tag: entries: {entries}")
+        logging.info(f"GitTests.test_tag: entries: {entries}")
         util.tag(b"v0.0.10", b"first!")
         tags = util.get_tags()
-        self._print(f"\nGitTests.test_tag: 1st tags: {tags}\n\n")
+        logging.info(f"\nGitTests.test_tag: 1st tags: {tags}\n\n")
         tag_values = util.get_tag_values()
         for k,v in tag_values.items():
             print(f"    a tag: {k} = {v}\n")
@@ -352,7 +338,7 @@ class GitTests(unittest.TestCase):
         self.assertEqual(doctext3, doc, msg=f"{doc} must equal {doctext3}")
         util.tag(b"v0.0.01", b"second!")
         tags = util.get_tags()
-        self._print(f"GitTests.test_tag: 2rd tags: {tags}")
+        logging.info(f"GitTests.test_tag: 2rd tags: {tags}")
         time.sleep(.5)
         #
         # fourth write
@@ -369,7 +355,7 @@ class GitTests(unittest.TestCase):
 
         util.tag(b"v0.0.05", b"third!")
         tags = util.get_tags()
-        self._print(f"GitTests.test_tag: 3rd tags: {tags}")
+        logging.info(f"GitTests.test_tag: 3rd tags: {tags}")
         #
         # switch between different tags
         #

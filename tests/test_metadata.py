@@ -2,6 +2,7 @@ import unittest
 from cdocs.context import ContextMetadata
 from bdocs.bdocs_config import BdocsConfig
 from bdocs.building_metadata import BuildingMetadata
+import logging
 
 class MetadataTests(unittest.TestCase):
 
@@ -10,21 +11,13 @@ class MetadataTests(unittest.TestCase):
         print("setting up MetadataTests")
         BdocsConfig.setTesting()
 
-    noise = BdocsConfig().get("testing", "MetadataTests_noise") == "on"
-    def _print(self, text:str) -> None:
-        if self.noise:
-            print(text)
-
-    def off(self) -> bool:
-        return BdocsConfig().get("testing", "MetadataTests") == "off"
 
     def test_root_info(self):
-        self._print(f"MetadataTests.test_root_info")
-        if self.off(): return
+        logging.info(f"MetadataTests.test_root_info")
         config = BdocsConfig()
         metadata = BuildingMetadata(config)
         rootinfo = metadata.get_root_info("public")
-        self._print(f"MetadataTests.test_root_info: rootinfo for public: {rootinfo}")
+        logging.info(f"MetadataTests.test_root_info: rootinfo for public: {rootinfo}")
         self.assertIsNotNone( rootinfo, msg=f"no root info for public!")
         self.assertEqual( rootinfo.name, "public", msg=f"rootinfo.name must be public, not {rootinfo.name}")
         self.assertIn("cdocs", rootinfo.accepts, msg=f"rootinfo must accept 'cdocs': {rootinfo.accepts}")
@@ -35,7 +28,7 @@ class MetadataTests(unittest.TestCase):
         self.assertEqual( len(features), 4, msg=f"'public' must have 4 features, not {len(features)}")
 
         features = metadata.features.get("json")
-        self._print(f"MetadataTests.test_root_info: features of json: {features}")
+        logging.info(f"MetadataTests.test_root_info: features of json: {features}")
         self.assertIsNotNone(features, msg=f"features of 'json' must not be None")
         #transform
         self.assertEqual( len(features), 1, msg=f"'json' must have 1 features, not {len(features)}")

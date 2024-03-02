@@ -8,6 +8,7 @@ from bdocs.search.whoosh_searcher import WhooshSearcher
 from bdocs.searcher import Query
 from bdocs.search.index_doc import IndexDoc
 import os
+import logging
 
 PATH = "docs"
 ROOTNAME = "search_test"
@@ -21,17 +22,8 @@ class SearchTests(unittest.TestCase):
         BdocsConfig.setTesting()
 
 
-    noise = BdocsConfig().get("testing", "SearchTests_noise") == "on"
-    def _print(self, text:str) -> None:
-        if self.noise:
-            print(text)
-
-    def _off(self):
-        return BdocsConfig().get("testing", "SearchTests") == "off"
-
     def test_index_doc(self):
-        self._print(f"SearchTests.test_index_doc")
-        if self._off(): return
+        logging.info(f"SearchTests.test_index_doc")
         json = {}
         json["root"] = "root"
         json["path"] = "path"
@@ -50,8 +42,7 @@ class SearchTests(unittest.TestCase):
         self.assertIsNone(doc.content, msg=f"doc.content must be None")
 
     def test_index(self):
-        self._print(f"SearchTests.test_index")
-        if self._off(): return
+        logging.info(f"SearchTests.test_index")
         metadata = BuildingMetadata()
         bdocs = Bdocs(ROOT, metadata)
         win = WhooshIndexer(metadata, bdocs)
