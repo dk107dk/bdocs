@@ -67,6 +67,9 @@ class Bdocs(BuildingDocs):
         self._use_pather = SimplePather
         self._use_searcher = SimpleNullSearcher
         self._use_indexer = SimpleNullIndexer
+        #
+        # TODO: should track_last_change be a feature?
+        #
 
     @property
     def root_name(self):
@@ -94,6 +97,10 @@ class Bdocs(BuildingDocs):
         return self._metadata
 
 # ---------------
+
+    @property
+    def cdocs(self) -> Cdocs:
+        return Cdocs(self.get_docs_root())
 
     @property
     def mover(self) -> Mover:
@@ -207,6 +214,11 @@ class Bdocs(BuildingDocs):
     def get_docs_root(self) -> FilePath:
         return self._docs_root
 
+    def _track_last_change(self) -> None:
+        cdocs = self.cdocs
+        cdocs.track_last_change = True
+        cdocs.set_last_change()
+
     def put_doc(self, path:DocPath, doc:Union[bytes,Doc]) -> None:
         filepath:FilePath = self.pather.get_full_file_path(path)
         logging.info(f"Bdocs.put_doc: path: {path}, filepath: {filepath} ")
@@ -217,21 +229,26 @@ class Bdocs(BuildingDocs):
         logging.info(f"Bdocs.put_doc: path: {path}, filepath: {filepath} ")
         self.writer.write(filepath, bs)
         self.indexer.index_doc(path, doc)
+        self._track_last_change()
 
     def move_doc(self, fromdoc:DocPath, todoc:DocPath) -> None:
         self.mover.move_doc(fromdoc,todoc)
+        self._track_last_change()
 
     def copy_doc(self, fromdoc:DocPath, todoc:DocPath) -> None:
         self.mover.copy_doc(fromdoc,todoc)
+        self._track_last_change()
 
     def delete_doc(self, path:DocPath) -> None:
         filepath:FilePath = self.pather.get_full_file_path(path)
         self.deleter.delete(filepath)
         self.indexer.remove_doc(path)
+        self._track_last_change()
 
     def delete_doc_tree(self, path:DocPath) -> None:
         filepath = self.get_dir_for_docpath(path)
         self.deleter.delete_doc_tree(filepath)
+        self._track_last_change()
 
     def get_dir_for_docpath(self, path:DocPath) -> FilePath:
         logging.info(f"get_dir_for_docpath: root: {self.get_docs_root()} path: {path}")
@@ -252,7 +269,9 @@ class Bdocs(BuildingDocs):
         dir = self.get_dir_for_docpath("/")
         return self.zipper.zip(dir)
 
-
+    #
+    # -------------- suspect code vvvvv
+    #
     # arguably this method belongs on Cdocs. not worried about that atm.
     def get_docs_with_titles(self, path:DocPath, options:Optional[SearchOptions]=None) -> Dict[str, DocPath]:
         cdocs = Cdocs(self.get_docs_root())

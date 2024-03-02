@@ -17,7 +17,7 @@ class SimpleZipper(Zipper):
 
     def zip(self, filepath:FilePath) -> FilePath:
         auuid =  uuid4()
-        auuid = str(auuid).replace('-', '_') + ".zip"
+        auuid = str(auuid).replace('-', '_')
         result = shutil.make_archive(auuid, 'zip', filepath)
         return result
 
