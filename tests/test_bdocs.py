@@ -1,5 +1,4 @@
 from bdocs.bdocs import Bdocs
-from bdocs.bdocs_config import BdocsConfig
 from bdocs.printer import Printer
 from bdocs.building_metadata import BuildingMetadata
 from cdocs.cdocs import Cdocs
@@ -16,11 +15,6 @@ TMP:FilePath = "tmp"
 HOME:DocPath = "/app/home"
 
 class BdocsTests(unittest.TestCase):
-
-    @classmethod
-    def setUpClass(cls):
-        print("setting up BdocsTests")
-        BdocsConfig.setTesting()
 
 
     def test_zip_doc_tree(self):

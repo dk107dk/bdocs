@@ -35,13 +35,5 @@ class BdocsConfig(SimpleConfig):
             self._parser.remove_section(section)
         self.save_config()
 
-    def get_ur_root_path(self):
-        if BdocsConfig.testing:
-            return self.get("test", "root")
-        else:
-            return self.get("ur", "root")
 
-    @classmethod
-    def setTesting(cls):
-        cls.testing = True
 

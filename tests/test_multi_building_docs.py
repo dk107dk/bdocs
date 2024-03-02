@@ -14,10 +14,6 @@ PATH:FilePath = "docs/example"
 
 class BlockTests(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        print("setting up BlockTests")
-        BdocsConfig.setTesting()
 
 
     def test_unzip_doc_tree(self):

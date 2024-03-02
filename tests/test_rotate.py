@@ -4,16 +4,11 @@ import os
 import shutil
 from bdocs.building_metadata import BuildingMetadata
 from bdocs.bdocs import Bdocs
-from bdocs.bdocs_config import BdocsConfig
 from cdocs.contextual_docs import FilePath
 import logging
 
 class RotateTests(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        print("setting up RotateTests")
-        BdocsConfig.setTesting()
 
 
     def test_rotate_file(self):

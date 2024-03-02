@@ -1,14 +1,9 @@
-from bdocs.bdocs_config import BdocsConfig
 from bdocs.tree_util import TreeUtil
 import unittest
 import logging
 
 class TreeUtilTests(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        print("setting up TreeUtilTests")
-        BdocsConfig.setTesting()
 
 
     def test_clone(self):

@@ -4,7 +4,6 @@ from bdocs.git.git_deleter import GitDeleter
 from bdocs.git.git_mover import GitMover
 from bdocs.building_metadata import BuildingMetadata
 from bdocs.bdocs import Bdocs
-from bdocs.bdocs_config import BdocsConfig
 from bdocs.file_util import FileUtil
 from bdocs.git.git_util import GitUtil
 from cdocs.cdocs import Cdocs
@@ -20,10 +19,6 @@ ROOT = PATH + "/" + ROOTNAME
 
 class GitTests(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        print("setting up GitTests")
-        BdocsConfig.setTesting()
 
     def test_init(self):
         logging.info(f"GitTests.test_init")

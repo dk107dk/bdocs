@@ -6,10 +6,6 @@ import logging
 
 class MetadataTests(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        print("setting up MetadataTests")
-        BdocsConfig.setTesting()
 
 
     def test_root_info(self):

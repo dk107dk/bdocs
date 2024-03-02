@@ -19,10 +19,6 @@ RULE = "/app/home"
 
 class RulesTests(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        print("setting up RulesTests")
-        BdocsConfig.setTesting()
 
 
     def test_rules_feature(self):

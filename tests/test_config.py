@@ -4,12 +4,6 @@ import logging
 
 class ConfigTests(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        print("setting up ConfigTests")
-        BdocsConfig.setTesting()
-
-
 
     def test_add_and_remove(self):
         logging.info(f"ConfigTests.test_add_and_remove")

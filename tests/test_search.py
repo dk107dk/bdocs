@@ -1,6 +1,5 @@
 import unittest
 from bdocs.building_metadata import BuildingMetadata
-from bdocs.bdocs_config import BdocsConfig
 from bdocs.bdocs import Bdocs
 from cdocs.cdocs import Cdocs
 from bdocs.search.whoosh_indexer import WhooshIndexer
@@ -16,10 +15,7 @@ ROOT = PATH + "/" + ROOTNAME
 
 class SearchTests(unittest.TestCase):
 
-    @classmethod
-    def setUpClass(cls):
-        print("setting up SearchTests")
-        BdocsConfig.setTesting()
+
 
 
     def test_index_doc(self):
