@@ -68,13 +68,13 @@ files = [
 
 [[package]]
 name = "cdocs"
-version = "0.0.41"
+version = "0.0.42"
 description = ""
 optional = false
 python-versions = ">=3.12,<4.0"
 files = [
-    {file = "cdocs-0.0.41-py3-none-any.whl", hash = "sha256:d1edfc5b9ad3d03584909d965b8a31675e1cf50988dd8d7a33d5809123fed962"},
-    {file = "cdocs-0.0.41.tar.gz", hash = "sha256:e4efe72842033f7b198f49c2599b8c3f7509e97179adc5cd850d595791880f79"},
+    {file = "cdocs-0.0.42-py3-none-any.whl", hash = "sha256:9818028868521cf7894d107ff73b3273b9be2cf95d05394dceefd1d2da17b285"},
+    {file = "cdocs-0.0.42.tar.gz", hash = "sha256:ea138f4fcb36947d3d4757f6153770f055d86c616f1a66fe9e72d7993501be74"},
 ]
 
 [package.dependencies]
@@ -1203,4 +1203,4 @@ files = [
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "af3cf30cccb6a6e898760eed2474a9a88427afe7ad03bd5d47d23accc314c8ce"
+content-hash = "54c95483ef2c9cd8e93d7967f9bbaf961e72f1ada14017ab89b3226b2ab5c9e1"
